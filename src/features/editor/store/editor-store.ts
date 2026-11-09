@@ -10,11 +10,32 @@ import type {
   EditorStyles,
 } from "../types/editor-document";
 
+const HISTORY_LIMIT = 50;
+const GROUP_WINDOW_MS = 750;
+
+interface EditMeta {
+  kind: "text" | "style";
+  componentId: string;
+  field: string;
+}
+
+interface LastEdit extends EditMeta {
+  timestamp: number;
+}
+
 export interface EditorStore {
-  // State
+  // Current document
   document: EditorDocument;
+  savedDocument: EditorDocument;
+
+  // Editor state
   selectedComponentId: string | null;
   isDirty: boolean;
+
+  // History
+  past: EditorDocument[];
+  future: EditorDocument[];
+  lastEdit: LastEdit | null;
 
   // Component actions
   addComponent: (type: EditorComponentType) => void;
@@ -29,11 +50,58 @@ export interface EditorStore {
     styles: Partial<EditorStyles>
   ) => void;
 
-  // Persistence action
+  // History actions
+  undo: () => void;
+  redo: () => void;
+
+  // Persistence actions
+  beginSave: () => void;
   markSaved: (savedDocument: EditorDocument) => void;
 }
 
-// Update the appropriate text property.
+type HistoryUpdate = Pick<
+  EditorStore,
+  "document" | "past" | "future" | "isDirty" | "lastEdit"
+>;
+
+// Record a document change in our history.
+function recordDocumentChange(
+  state: EditorStore,
+  nextDocument: EditorDocument,
+  edit: EditMeta | null = null
+): HistoryUpdate {
+  const now = Date.now();
+
+  // Group rapid changes to the same field.
+  const shouldGroup =
+    edit !== null &&
+    state.lastEdit !== null &&
+    state.past.length > 0 &&
+    state.future.length === 0 &&
+    state.lastEdit.kind === edit.kind &&
+    state.lastEdit.componentId === edit.componentId &&
+    state.lastEdit.field === edit.field &&
+    now - state.lastEdit.timestamp < GROUP_WINDOW_MS;
+
+  return {
+    document: nextDocument,
+
+    past: shouldGroup
+      ? state.past
+      : [...state.past, state.document].slice(-HISTORY_LIMIT),
+
+    // A new edit invalidates the redo history.
+    future: [],
+
+    isDirty: nextDocument !== state.savedDocument,
+
+    lastEdit: edit
+      ? { ...edit, timestamp: now }
+      : null,
+  };
+}
+
+// Update text while preserving each component's type.
 function changeComponentText(
   component: EditorComponent,
   text: string
@@ -80,39 +148,47 @@ function changeComponentText(
   }
 }
 
-// Create a separate editor store for each project.
 export function createEditorStore(
   projectId: string,
   initialDocument?: EditorDocument | null
 ) {
+  // Use one shared reference for the current and saved
+  // document when initializing the editor.
+  const initial =
+    initialDocument ?? createEmptyDocument(projectId);
+
   return createStore<EditorStore>()((set) => ({
-    // Initial state
-    document:
-      initialDocument ?? createEmptyDocument(projectId),
+    document: initial,
+    savedDocument: initial,
 
     selectedComponentId: null,
     isDirty: false,
 
-    // Add component
+    past: [],
+    future: [],
+    lastEdit: null,
+
+    // ADD COMPONENT
     addComponent: (type) => {
       const newComponent = createEditorComponent(type);
 
-      set((state) => ({
-        document: {
+      set((state) => {
+        const nextDocument: EditorDocument = {
           ...state.document,
-
           components: [
             ...state.document.components,
             newComponent,
           ],
-        },
+        };
 
-        selectedComponentId: newComponent.id,
-        isDirty: true,
-      }));
+        return {
+          ...recordDocumentChange(state, nextDocument),
+          selectedComponentId: newComponent.id,
+        };
+      });
     },
 
-    // Select component
+    // SELECT COMPONENT
     selectComponent: (id) => {
       set((state) => {
         const exists =
@@ -123,31 +199,39 @@ export function createEditorStore(
 
         return {
           selectedComponentId: exists ? id : null,
+          lastEdit: null,
         };
       });
     },
 
-    // Remove component
+    // REMOVE COMPONENT
     removeComponent: (id) => {
-      set((state) => ({
-        document: {
-          ...state.document,
+      set((state) => {
+        const exists = state.document.components.some(
+          (component) => component.id === id
+        );
 
+        if (!exists) return state;
+
+        const nextDocument: EditorDocument = {
+          ...state.document,
           components: state.document.components.filter(
             (component) => component.id !== id
           ),
-        },
+        };
 
-        selectedComponentId:
-          state.selectedComponentId === id
-            ? null
-            : state.selectedComponentId,
+        return {
+          ...recordDocumentChange(state, nextDocument),
 
-        isDirty: true,
-      }));
+          selectedComponentId:
+            state.selectedComponentId === id
+              ? null
+              : state.selectedComponentId,
+        };
+      });
     },
 
-    // Update component text
+    // UPDATE TEXT
     updateComponentText: (id, text) => {
       set((state) => {
         const target = state.document.components.find(
@@ -158,71 +242,169 @@ export function createEditorStore(
           return state;
         }
 
-        return {
-          document: {
-            ...state.document,
+        const currentText =
+          target.type === "heading" ||
+          target.type === "paragraph"
+            ? target.props.text
+            : target.props.label;
 
-            components: state.document.components.map(
-              (component) =>
-                component.id === id
-                  ? changeComponentText(component, text)
-                  : component
-            ),
-          },
+        if (currentText === text) {
+          return state;
+        }
 
-          isDirty: true,
+        const nextDocument: EditorDocument = {
+          ...state.document,
+          components: state.document.components.map(
+            (component) =>
+              component.id === id
+                ? changeComponentText(component, text)
+                : component
+          ),
         };
+
+        return recordDocumentChange(state, nextDocument, {
+          kind: "text",
+          componentId: id,
+          field: "content",
+        });
       });
     },
 
-    // Update component styles
+    // UPDATE STYLES
     updateComponentStyle: (id, styles) => {
       set((state) => {
-        const exists = state.document.components.some(
+        const target = state.document.components.find(
           (component) => component.id === id
         );
 
-        if (!exists) {
+        if (!target) return state;
+
+        const keys = Object.keys(styles) as
+          (keyof EditorStyles)[];
+
+        if (
+          keys.length === 0 ||
+          keys.every(
+            (key) =>
+              target.styles[key] === styles[key]
+          )
+        ) {
           return state;
         }
 
+        const nextDocument: EditorDocument = {
+          ...state.document,
+          components: state.document.components.map(
+            (component) =>
+              component.id === id
+                ? {
+                    ...component,
+                    styles: {
+                      ...component.styles,
+                      ...styles,
+                    },
+                  }
+                : component
+          ),
+        };
+
+        return recordDocumentChange(state, nextDocument, {
+          kind: "style",
+          componentId: id,
+          field: keys.sort().join(","),
+        });
+      });
+    },
+
+    // UNDO
+    undo: () => {
+      set((state) => {
+        if (state.past.length === 0) {
+          return state;
+        }
+
+        const previous =
+          state.past[state.past.length - 1];
+
         return {
-          document: {
-            ...state.document,
+          document: previous,
 
-            components: state.document.components.map(
+          past: state.past.slice(0, -1),
+
+          future: [
+            ...state.future,
+            state.document,
+          ].slice(-HISTORY_LIMIT),
+
+          isDirty: previous !== state.savedDocument,
+
+          selectedComponentId:
+            state.selectedComponentId &&
+            previous.components.some(
               (component) =>
-                component.id === id
-                  ? {
-                      ...component,
+                component.id === state.selectedComponentId
+            )
+              ? state.selectedComponentId
+              : null,
 
-                      styles: {
-                        ...component.styles,
-                        ...styles,
-                      },
-                    }
-                  : component
-            ),
-          },
-
-          isDirty: true,
+          lastEdit: null,
         };
       });
     },
 
-    // Mark the document as saved
-    markSaved: (savedDocument) => {
+    // REDO
+    redo: () => {
       set((state) => {
-        // Don't clear unsaved changes if the user
-        // has edited the document since saving started.
-        if (state.document !== savedDocument) {
+        if (state.future.length === 0) {
           return state;
         }
 
+        const next =
+          state.future[state.future.length - 1];
+
         return {
-          isDirty: false,
+          document: next,
+
+          past: [
+            ...state.past,
+            state.document,
+          ].slice(-HISTORY_LIMIT),
+
+          future: state.future.slice(0, -1),
+
+          isDirty: next !== state.savedDocument,
+
+          selectedComponentId:
+            state.selectedComponentId &&
+            next.components.some(
+              (component) =>
+                component.id === state.selectedComponentId
+            )
+              ? state.selectedComponentId
+              : null,
+
+          lastEdit: null,
         };
       });
+    },
+
+    // Create a history boundary when saving starts.
+    beginSave: () => {
+      set({
+        lastEdit: null,
+      });
+    },
+
+    // UPDATE SAVED DOCUMENT
+    markSaved: (savedDocument) => {
+      set((state) => ({
+        savedDocument,
+
+        // New edits made during saving remain unsaved.
+        isDirty: state.document !== savedDocument,
+
+        lastEdit: null,
+      }));
     },
   }));
 }

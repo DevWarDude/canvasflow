@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getEditorDocument } from "../lib/editor-document-repository";
 
 import { EditorStoreProvider } from "../store/editor-store-provider";
+import { EditorHistoryShortcuts } from "./editor-history-shortcuts";
 
 interface EditorSessionProps {
   projectId: string;
@@ -70,6 +71,7 @@ export function EditorSession({
       projectId={projectId}
       initialDocument={savedDocument ?? null}
     >
+       <EditorHistoryShortcuts />
       {children}
     </EditorStoreProvider>
   );
