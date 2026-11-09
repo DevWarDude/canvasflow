@@ -55,6 +55,8 @@ export interface EditorStore {
   // Persistence actions
   beginSave: () => void;
   markSaved: (savedDocument: EditorDocument) => void;
+
+  reorderComponent: (fromIndex: number, toIndex: number) => void;
 }
 
 type HistoryUpdate = Pick<
@@ -422,6 +424,47 @@ export function createEditorStore(
         };
 
         // Record the change for Undo/Redo.
+        return recordDocumentChange(state, nextDocument);
+      });
+    },
+
+    // REORDER COMPONENTS USING DRAG-AND-DROP
+    reorderComponent: (fromIndex, toIndex) => {
+      set((state) => {
+        const components = state.document.components;
+
+        // Reject invalid positions.
+        if (
+          !Number.isInteger(fromIndex) ||
+          !Number.isInteger(toIndex) ||
+          fromIndex < 0 ||
+          toIndex < 0 ||
+          fromIndex >= components.length ||
+          toIndex >= components.length ||
+          fromIndex === toIndex
+        ) {
+          return state;
+        }
+
+        // Create a copy to preserve immutability.
+        const reorderedComponents = [...components];
+
+        // Remove the dragged component.
+        const [movedComponent] = reorderedComponents.splice(fromIndex, 1);
+
+        if (!movedComponent) {
+          return state;
+        }
+
+        // Insert it at the destination.
+        reorderedComponents.splice(toIndex, 0, movedComponent);
+
+        const nextDocument: EditorDocument = {
+          ...state.document,
+          components: reorderedComponents,
+        };
+
+        // Record one history step.
         return recordDocumentChange(state, nextDocument);
       });
     },

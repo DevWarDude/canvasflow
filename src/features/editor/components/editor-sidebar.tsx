@@ -6,16 +6,19 @@ import {
   MousePointer2,
   ImageIcon,
   Square,
-  ArrowUp,
-  ArrowDown,
   Layers3,
-  Trash2,
   type LucideIcon,
 } from "lucide-react";
+
+import { DragDropProvider } from "@dnd-kit/react";
+
+import { isSortable } from "@dnd-kit/react/sortable";
 
 import type { EditorComponentType } from "../types/editor-document";
 
 import { useEditorStore } from "../store/editor-store-provider";
+
+import { SortableLayerItem } from "./sortable-layer-item";
 
 interface LibraryItem {
   name: string;
@@ -58,17 +61,19 @@ export function EditorSidebar() {
     (state) => state.selectedComponentId,
   );
 
-  const moveComponent = useEditorStore((state) => state.moveComponent);
-
   const addComponent = useEditorStore((state) => state.addComponent);
 
   const selectComponent = useEditorStore((state) => state.selectComponent);
 
   const removeComponent = useEditorStore((state) => state.removeComponent);
 
+  const moveComponent = useEditorStore((state) => state.moveComponent);
+
+  const reorderComponent = useEditorStore((state) => state.reorderComponent);
+
   return (
     <aside className="flex w-64 shrink-0 flex-col border-r border-canvas-editor-border bg-canvas-editor-panel">
-      {/* Component Library */}
+      {/* COMPONENT LIBRARY */}
       <section className="min-h-0 flex-1 overflow-y-auto p-4">
         <h2 className="mb-5 text-xs font-semibold uppercase tracking-wider text-gray-400">
           Components
@@ -94,7 +99,7 @@ export function EditorSidebar() {
         </div>
       </section>
 
-      {/* Layers */}
+      {/* LAYERS PANEL */}
       <section className="flex h-64 shrink-0 flex-col border-t border-canvas-editor-border p-4">
         <div className="mb-4 flex items-center gap-2">
           <Layers3 className="size-4 text-gray-400" />
@@ -104,64 +109,46 @@ export function EditorSidebar() {
           </h2>
         </div>
 
-        <div className="min-h-0 flex-1 space-y-2 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto">
           {components.length === 0 ? (
             <p className="text-xs text-gray-500">No components added yet.</p>
           ) : (
-            components.map((component, index) => (
-              <div
-                key={component.id}
-                className={`flex items-center gap-1 rounded-lg border px-2 py-2 ${
-                  selectedComponentId === component.id
-                    ? "border-indigo-500 bg-indigo-500/10"
-                    : "border-canvas-editor-border bg-white/5"
-                }`}
-              >
-                {/* Select Component */}
-                <button
-                  type="button"
-                  onClick={() => selectComponent(component.id)}
-                  className="min-w-0 flex-1 truncate text-left text-xs capitalize text-gray-200"
-                >
-                  {index + 1}. {component.type}
-                </button>
+            <DragDropProvider
+              onDragEnd={(event) => {
+                if (event.canceled) {
+                  return;
+                }
 
-                {/* Move Up */}
-                <button
-                  type="button"
-                  title="Move up"
-                  aria-label={`Move ${component.type} at position ${index + 1} up`}
-                  onClick={() => moveComponent(component.id, "up")}
-                  disabled={index === 0}
-                  className="rounded p-1 text-gray-400 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
-                >
-                  <ArrowUp className="size-3.5" />
-                </button>
+                const { source } = event.operation;
 
-                {/* Move Down */}
-                <button
-                  type="button"
-                  title="Move down"
-                  aria-label={`Move ${component.type} at position ${index + 1} down`}
-                  onClick={() => moveComponent(component.id, "down")}
-                  disabled={index === components.length - 1}
-                  className="rounded p-1 text-gray-400 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
-                >
-                  <ArrowDown className="size-3.5" />
-                </button>
+                if (!isSortable(source)) {
+                  return;
+                }
 
-                {/* Delete */}
-                <button
-                  type="button"
-                  aria-label={`Delete ${component.type}`}
-                  title="Delete component"
-                  onClick={() => removeComponent(component.id)}
-                  className="rounded p-1 text-gray-400 transition-colors hover:bg-red-500/10 hover:text-red-400"
-                >
-                  <Trash2 className="size-3.5" />
-                </button>
+                const { initialIndex, index } = source;
+
+                if (initialIndex !== index) {
+                  reorderComponent(initialIndex, index);
+                }
+              }}
+            >
+              <div className="flex flex-col gap-2">
+                {components.map((component, index) => (
+                  <SortableLayerItem
+                    key={component.id}
+                    component={component}
+                    index={index}
+                    total={components.length}
+                    isSelected={selectedComponentId === component.id}
+                    onSelect={() => selectComponent(component.id)}
+                    onMove={(direction) =>
+                      moveComponent(component.id, direction)
+                    }
+                    onDelete={() => removeComponent(component.id)}
+                  />
+                ))}
               </div>
-            ))
+            </DragDropProvider>
           )}
         </div>
       </section>
