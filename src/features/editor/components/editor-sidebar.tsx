@@ -6,14 +6,14 @@ import {
   MousePointer2,
   ImageIcon,
   Square,
+  ArrowUp,
+  ArrowDown,
   Layers3,
   Trash2,
   type LucideIcon,
 } from "lucide-react";
 
-import type {
-  EditorComponentType,
-} from "../types/editor-document";
+import type { EditorComponentType } from "../types/editor-document";
 
 import { useEditorStore } from "../store/editor-store-provider";
 
@@ -52,25 +52,19 @@ const libraryItems: LibraryItem[] = [
 ];
 
 export function EditorSidebar() {
-  const components = useEditorStore(
-    (state) => state.document.components
-  );
+  const components = useEditorStore((state) => state.document.components);
 
   const selectedComponentId = useEditorStore(
-    (state) => state.selectedComponentId
+    (state) => state.selectedComponentId,
   );
 
-  const addComponent = useEditorStore(
-    (state) => state.addComponent
-  );
+  const moveComponent = useEditorStore((state) => state.moveComponent);
 
-  const selectComponent = useEditorStore(
-    (state) => state.selectComponent
-  );
+  const addComponent = useEditorStore((state) => state.addComponent);
 
-  const removeComponent = useEditorStore(
-    (state) => state.removeComponent
-  );
+  const selectComponent = useEditorStore((state) => state.selectComponent);
+
+  const removeComponent = useEditorStore((state) => state.removeComponent);
 
   return (
     <aside className="flex w-64 shrink-0 flex-col border-r border-canvas-editor-border bg-canvas-editor-panel">
@@ -93,9 +87,7 @@ export function EditorSidebar() {
               >
                 <Icon className="size-5" />
 
-                <span className="text-xs">
-                  {item.name}
-                </span>
+                <span className="text-xs">{item.name}</span>
               </button>
             );
           })}
@@ -114,38 +106,59 @@ export function EditorSidebar() {
 
         <div className="min-h-0 flex-1 space-y-2 overflow-y-auto">
           {components.length === 0 ? (
-            <p className="text-xs text-gray-500">
-              No components added yet.
-            </p>
+            <p className="text-xs text-gray-500">No components added yet.</p>
           ) : (
             components.map((component, index) => (
               <div
                 key={component.id}
-                className={`flex items-center gap-2 rounded-lg border px-2 py-2 ${
+                className={`flex items-center gap-1 rounded-lg border px-2 py-2 ${
                   selectedComponentId === component.id
                     ? "border-indigo-500 bg-indigo-500/10"
                     : "border-canvas-editor-border bg-white/5"
                 }`}
               >
+                {/* Select Component */}
                 <button
                   type="button"
-                  onClick={() =>
-                    selectComponent(component.id)
-                  }
+                  onClick={() => selectComponent(component.id)}
                   className="min-w-0 flex-1 truncate text-left text-xs capitalize text-gray-200"
                 >
                   {index + 1}. {component.type}
                 </button>
 
+                {/* Move Up */}
+                <button
+                  type="button"
+                  title="Move up"
+                  aria-label={`Move ${component.type} at position ${index + 1} up`}
+                  onClick={() => moveComponent(component.id, "up")}
+                  disabled={index === 0}
+                  className="rounded p-1 text-gray-400 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  <ArrowUp className="size-3.5" />
+                </button>
+
+                {/* Move Down */}
+                <button
+                  type="button"
+                  title="Move down"
+                  aria-label={`Move ${component.type} at position ${index + 1} down`}
+                  onClick={() => moveComponent(component.id, "down")}
+                  disabled={index === components.length - 1}
+                  className="rounded p-1 text-gray-400 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  <ArrowDown className="size-3.5" />
+                </button>
+
+                {/* Delete */}
                 <button
                   type="button"
                   aria-label={`Delete ${component.type}`}
-                  onClick={() =>
-                    removeComponent(component.id)
-                  }
-                  className="rounded p-1 text-gray-400 hover:bg-red-500/10 hover:text-red-400"
+                  title="Delete component"
+                  onClick={() => removeComponent(component.id)}
+                  className="rounded p-1 text-gray-400 transition-colors hover:bg-red-500/10 hover:text-red-400"
                 >
-                  <Trash2 className="size-4" />
+                  <Trash2 className="size-3.5" />
                 </button>
               </div>
             ))

@@ -41,14 +41,12 @@ export interface EditorStore {
   addComponent: (type: EditorComponentType) => void;
   selectComponent: (id: string | null) => void;
   removeComponent: (id: string) => void;
+  moveComponent: (id: string, direction: "up" | "down") => void;
 
   // Editing actions
   updateComponentText: (id: string, text: string) => void;
 
-  updateComponentStyle: (
-    id: string,
-    styles: Partial<EditorStyles>
-  ) => void;
+  updateComponentStyle: (id: string, styles: Partial<EditorStyles>) => void;
 
   // History actions
   undo: () => void;
@@ -68,7 +66,7 @@ type HistoryUpdate = Pick<
 function recordDocumentChange(
   state: EditorStore,
   nextDocument: EditorDocument,
-  edit: EditMeta | null = null
+  edit: EditMeta | null = null,
 ): HistoryUpdate {
   const now = Date.now();
 
@@ -95,16 +93,14 @@ function recordDocumentChange(
 
     isDirty: nextDocument !== state.savedDocument,
 
-    lastEdit: edit
-      ? { ...edit, timestamp: now }
-      : null,
+    lastEdit: edit ? { ...edit, timestamp: now } : null,
   };
 }
 
 // Update text while preserving each component's type.
 function changeComponentText(
   component: EditorComponent,
-  text: string
+  text: string,
 ): EditorComponent {
   switch (component.type) {
     case "heading":
@@ -150,12 +146,11 @@ function changeComponentText(
 
 export function createEditorStore(
   projectId: string,
-  initialDocument?: EditorDocument | null
+  initialDocument?: EditorDocument | null,
 ) {
   // Use one shared reference for the current and saved
   // document when initializing the editor.
-  const initial =
-    initialDocument ?? createEmptyDocument(projectId);
+  const initial = initialDocument ?? createEmptyDocument(projectId);
 
   return createStore<EditorStore>()((set) => ({
     document: initial,
@@ -175,10 +170,7 @@ export function createEditorStore(
       set((state) => {
         const nextDocument: EditorDocument = {
           ...state.document,
-          components: [
-            ...state.document.components,
-            newComponent,
-          ],
+          components: [...state.document.components, newComponent],
         };
 
         return {
@@ -193,9 +185,7 @@ export function createEditorStore(
       set((state) => {
         const exists =
           id === null ||
-          state.document.components.some(
-            (component) => component.id === id
-          );
+          state.document.components.some((component) => component.id === id);
 
         return {
           selectedComponentId: exists ? id : null,
@@ -208,7 +198,7 @@ export function createEditorStore(
     removeComponent: (id) => {
       set((state) => {
         const exists = state.document.components.some(
-          (component) => component.id === id
+          (component) => component.id === id,
         );
 
         if (!exists) return state;
@@ -216,7 +206,7 @@ export function createEditorStore(
         const nextDocument: EditorDocument = {
           ...state.document,
           components: state.document.components.filter(
-            (component) => component.id !== id
+            (component) => component.id !== id,
           ),
         };
 
@@ -224,9 +214,7 @@ export function createEditorStore(
           ...recordDocumentChange(state, nextDocument),
 
           selectedComponentId:
-            state.selectedComponentId === id
-              ? null
-              : state.selectedComponentId,
+            state.selectedComponentId === id ? null : state.selectedComponentId,
         };
       });
     },
@@ -235,7 +223,7 @@ export function createEditorStore(
     updateComponentText: (id, text) => {
       set((state) => {
         const target = state.document.components.find(
-          (component) => component.id === id
+          (component) => component.id === id,
         );
 
         if (!target || target.type === "image") {
@@ -243,8 +231,7 @@ export function createEditorStore(
         }
 
         const currentText =
-          target.type === "heading" ||
-          target.type === "paragraph"
+          target.type === "heading" || target.type === "paragraph"
             ? target.props.text
             : target.props.label;
 
@@ -254,11 +241,10 @@ export function createEditorStore(
 
         const nextDocument: EditorDocument = {
           ...state.document,
-          components: state.document.components.map(
-            (component) =>
-              component.id === id
-                ? changeComponentText(component, text)
-                : component
+          components: state.document.components.map((component) =>
+            component.id === id
+              ? changeComponentText(component, text)
+              : component,
           ),
         };
 
@@ -274,37 +260,32 @@ export function createEditorStore(
     updateComponentStyle: (id, styles) => {
       set((state) => {
         const target = state.document.components.find(
-          (component) => component.id === id
+          (component) => component.id === id,
         );
 
         if (!target) return state;
 
-        const keys = Object.keys(styles) as
-          (keyof EditorStyles)[];
+        const keys = Object.keys(styles) as (keyof EditorStyles)[];
 
         if (
           keys.length === 0 ||
-          keys.every(
-            (key) =>
-              target.styles[key] === styles[key]
-          )
+          keys.every((key) => target.styles[key] === styles[key])
         ) {
           return state;
         }
 
         const nextDocument: EditorDocument = {
           ...state.document,
-          components: state.document.components.map(
-            (component) =>
-              component.id === id
-                ? {
-                    ...component,
-                    styles: {
-                      ...component.styles,
-                      ...styles,
-                    },
-                  }
-                : component
+          components: state.document.components.map((component) =>
+            component.id === id
+              ? {
+                  ...component,
+                  styles: {
+                    ...component.styles,
+                    ...styles,
+                  },
+                }
+              : component,
           ),
         };
 
@@ -323,26 +304,21 @@ export function createEditorStore(
           return state;
         }
 
-        const previous =
-          state.past[state.past.length - 1];
+        const previous = state.past[state.past.length - 1];
 
         return {
           document: previous,
 
           past: state.past.slice(0, -1),
 
-          future: [
-            ...state.future,
-            state.document,
-          ].slice(-HISTORY_LIMIT),
+          future: [...state.future, state.document].slice(-HISTORY_LIMIT),
 
           isDirty: previous !== state.savedDocument,
 
           selectedComponentId:
             state.selectedComponentId &&
             previous.components.some(
-              (component) =>
-                component.id === state.selectedComponentId
+              (component) => component.id === state.selectedComponentId,
             )
               ? state.selectedComponentId
               : null,
@@ -359,16 +335,12 @@ export function createEditorStore(
           return state;
         }
 
-        const next =
-          state.future[state.future.length - 1];
+        const next = state.future[state.future.length - 1];
 
         return {
           document: next,
 
-          past: [
-            ...state.past,
-            state.document,
-          ].slice(-HISTORY_LIMIT),
+          past: [...state.past, state.document].slice(-HISTORY_LIMIT),
 
           future: state.future.slice(0, -1),
 
@@ -377,8 +349,7 @@ export function createEditorStore(
           selectedComponentId:
             state.selectedComponentId &&
             next.components.some(
-              (component) =>
-                component.id === state.selectedComponentId
+              (component) => component.id === state.selectedComponentId,
             )
               ? state.selectedComponentId
               : null,
@@ -405,6 +376,54 @@ export function createEditorStore(
 
         lastEdit: null,
       }));
+    },
+
+    // MOVE COMPONENT
+    moveComponent: (id, direction) => {
+      set((state) => {
+        const components = state.document.components;
+
+        // Find the component's current position.
+        const currentIndex = components.findIndex(
+          (component) => component.id === id,
+        );
+
+        // Component doesn't exist.
+        if (currentIndex === -1) {
+          return state;
+        }
+
+        // Calculate its destination.
+        const targetIndex =
+          direction === "up" ? currentIndex - 1 : currentIndex + 1;
+
+        // Prevent moving beyond array boundaries.
+        if (targetIndex < 0 || targetIndex >= components.length) {
+          return state;
+        }
+
+        // Create a new array.
+        const reorderedComponents = [...components];
+
+        // Remove the component from its old position.
+        const [movedComponent] = reorderedComponents.splice(currentIndex, 1);
+
+        if (!movedComponent) {
+          return state;
+        }
+
+        // Insert it at its new position.
+        reorderedComponents.splice(targetIndex, 0, movedComponent);
+
+        // Create a new document.
+        const nextDocument: EditorDocument = {
+          ...state.document,
+          components: reorderedComponents,
+        };
+
+        // Record the change for Undo/Redo.
+        return recordDocumentChange(state, nextDocument);
+      });
     },
   }));
 }
