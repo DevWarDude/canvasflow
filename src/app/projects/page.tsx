@@ -8,20 +8,23 @@ import { DashboardHeader } from "@/features/projects/components/dashboard-header
 
 import { EmptyProjects } from "@/features/projects/components/empty-projects";
 
+import { ProjectGrid } from "@/features/projects/components/project-grid";
+
+import { mockProjects } from "@/features/projects/data/mock-projects";
+
 export default function ProjectsPage() {
+  // Temporary data until IndexedDB integration
+  const projects = mockProjects;
+
   return (
     <div className="flex min-h-screen bg-canvas-dashboard">
 
-      {/* Sidebar */}
       <DashboardSidebar />
 
-      {/* Main Area */}
       <div className="flex min-w-0 flex-1 flex-col">
 
-        {/* Header */}
         <DashboardHeader />
 
-        {/* Dashboard Content */}
         <main className="flex-1">
 
           <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-10">
@@ -39,20 +42,19 @@ export default function ProjectsPage() {
                 </p>
               </div>
 
-              {/* New Project Button */}
-              <Button
-                disabled
-                className="w-full sm:w-auto"
-              >
+              <Button disabled className="w-full sm:w-auto">
                 <Plus className="size-4" />
-
                 New Project
               </Button>
 
             </div>
 
-            {/* Projects Content */}
-            <EmptyProjects />
+            {/* Project Content */}
+            {projects.length === 0 ? (
+              <EmptyProjects />
+            ) : (
+              <ProjectGrid projects={projects} />
+            )}
 
           </div>
 
