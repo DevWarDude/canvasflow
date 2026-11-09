@@ -14,28 +14,40 @@ import {
   type EditorStore,
 } from "./editor-store";
 
-type EditorStoreApi = ReturnType<typeof createEditorStore>;
+import type {
+  EditorDocument,
+} from "../types/editor-document";
+
+type EditorStoreApi =
+  ReturnType<typeof createEditorStore>;
 
 const EditorStoreContext =
   createContext<EditorStoreApi | null>(null);
 
 interface EditorStoreProviderProps {
   projectId: string;
+  initialDocument: EditorDocument | null;
   children: ReactNode;
 }
 
 export function EditorStoreProvider({
   projectId,
+  initialDocument,
   children,
 }: EditorStoreProviderProps) {
   const storeRef = useRef<EditorStoreApi | null>(null);
 
   if (storeRef.current === null) {
-    storeRef.current = createEditorStore(projectId);
+    storeRef.current = createEditorStore(
+      projectId,
+      initialDocument
+    );
   }
 
   return (
-    <EditorStoreContext.Provider value={storeRef.current}>
+    <EditorStoreContext.Provider
+      value={storeRef.current}
+    >
       {children}
     </EditorStoreContext.Provider>
   );

@@ -8,7 +8,7 @@ import { EditorToolbar } from "./editor-toolbar";
 import { EditorSidebar } from "./editor-sidebar";
 import { EditorWorkspace } from "./editor-workspace";
 import { PropertiesPanel } from "./properties-panel";
-import { EditorStoreProvider } from "../store/editor-store-provider";
+import { EditorSession } from "./editor-session";
 
 interface EditorShellProps {
   projectId: string;
@@ -86,7 +86,7 @@ export function EditorShell({ projectId }: EditorShellProps) {
   }
 
   return (
-     <EditorStoreProvider
+     <EditorSession
     key={project.id}
     projectId={project.id}
   >
@@ -127,6 +127,6 @@ export function EditorShell({ projectId }: EditorShellProps) {
 
       </div>
  
-  </EditorStoreProvider>
+  </EditorSession>
   );
 }

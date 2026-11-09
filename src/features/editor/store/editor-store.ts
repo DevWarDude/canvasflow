@@ -11,28 +11,43 @@ import type {
 } from "../types/editor-document";
 
 export interface EditorStore {
+  // State
   document: EditorDocument;
   selectedComponentId: string | null;
   isDirty: boolean;
 
+  // Component actions
   addComponent: (type: EditorComponentType) => void;
   selectComponent: (id: string | null) => void;
   removeComponent: (id: string) => void;
 
+  // Editing actions
   updateComponentText: (id: string, text: string) => void;
+
   updateComponentStyle: (
     id: string,
     styles: Partial<EditorStyles>
   ) => void;
+
+  // Persistence action
+  markSaved: (savedDocument: EditorDocument) => void;
 }
 
-// Update the correct text property for each component.
+// Update the appropriate text property.
 function changeComponentText(
   component: EditorComponent,
   text: string
 ): EditorComponent {
   switch (component.type) {
     case "heading":
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          text,
+        },
+      };
+
     case "paragraph":
       return {
         ...component,
@@ -43,6 +58,14 @@ function changeComponentText(
       };
 
     case "button":
+      return {
+        ...component,
+        props: {
+          ...component.props,
+          label: text,
+        },
+      };
+
     case "section":
       return {
         ...component,
@@ -57,28 +80,39 @@ function changeComponentText(
   }
 }
 
-export function createEditorStore(projectId: string) {
+// Create a separate editor store for each project.
+export function createEditorStore(
+  projectId: string,
+  initialDocument?: EditorDocument | null
+) {
   return createStore<EditorStore>()((set) => ({
-    document: createEmptyDocument(projectId),
+    // Initial state
+    document:
+      initialDocument ?? createEmptyDocument(projectId),
+
     selectedComponentId: null,
     isDirty: false,
 
+    // Add component
     addComponent: (type) => {
       const newComponent = createEditorComponent(type);
 
       set((state) => ({
         document: {
           ...state.document,
+
           components: [
             ...state.document.components,
             newComponent,
           ],
         },
+
         selectedComponentId: newComponent.id,
         isDirty: true,
       }));
     },
 
+    // Select component
     selectComponent: (id) => {
       set((state) => {
         const exists =
@@ -93,23 +127,27 @@ export function createEditorStore(projectId: string) {
       });
     },
 
+    // Remove component
     removeComponent: (id) => {
       set((state) => ({
         document: {
           ...state.document,
+
           components: state.document.components.filter(
             (component) => component.id !== id
           ),
         },
+
         selectedComponentId:
           state.selectedComponentId === id
             ? null
             : state.selectedComponentId,
+
         isDirty: true,
       }));
     },
 
-    // Update heading text, paragraph text, or button/section label.
+    // Update component text
     updateComponentText: (id, text) => {
       set((state) => {
         const target = state.document.components.find(
@@ -123,6 +161,7 @@ export function createEditorStore(projectId: string) {
         return {
           document: {
             ...state.document,
+
             components: state.document.components.map(
               (component) =>
                 component.id === id
@@ -130,12 +169,13 @@ export function createEditorStore(projectId: string) {
                   : component
             ),
           },
+
           isDirty: true,
         };
       });
     },
 
-    // Update only the specified style properties.
+    // Update component styles
     updateComponentStyle: (id, styles) => {
       set((state) => {
         const exists = state.document.components.some(
@@ -149,11 +189,13 @@ export function createEditorStore(projectId: string) {
         return {
           document: {
             ...state.document,
+
             components: state.document.components.map(
               (component) =>
                 component.id === id
                   ? {
                       ...component,
+
                       styles: {
                         ...component.styles,
                         ...styles,
@@ -162,7 +204,23 @@ export function createEditorStore(projectId: string) {
                   : component
             ),
           },
+
           isDirty: true,
+        };
+      });
+    },
+
+    // Mark the document as saved
+    markSaved: (savedDocument) => {
+      set((state) => {
+        // Don't clear unsaved changes if the user
+        // has edited the document since saving started.
+        if (state.document !== savedDocument) {
+          return state;
+        }
+
+        return {
+          isDirty: false,
         };
       });
     },
