@@ -7,17 +7,13 @@ import { isSortable } from "@dnd-kit/react/sortable";
 
 import { useEditorStore } from "../store/editor-store-provider";
 
-import type {
-  EditorComponentType,
-} from "../types/editor-document";
+import type { EditorComponentType } from "../types/editor-document";
 
 interface EditorDndProviderProps {
   children: ReactNode;
 }
 
-function isEditorComponentType(
-  value: unknown
-): value is EditorComponentType {
+function isEditorComponentType(value: unknown): value is EditorComponentType {
   return (
     value === "heading" ||
     value === "paragraph" ||
@@ -27,16 +23,12 @@ function isEditorComponentType(
   );
 }
 
-export function EditorDndProvider({
-  children,
-}: EditorDndProviderProps) {
-  const addComponent = useEditorStore(
-    (state) => state.addComponent
-  );
+export function EditorDndProvider({ children }: EditorDndProviderProps) {
+  const addComponent = useEditorStore((state) => state.addComponent);
 
-  const reorderComponent = useEditorStore(
-    (state) => state.reorderComponent
-  );
+  const reorderComponent = useEditorStore((state) => state.reorderComponent);
+
+  const insertComponentAt = useEditorStore((state) => state.insertComponentAt);
 
   return (
     <DragDropProvider
@@ -52,21 +44,35 @@ export function EditorDndProvider({
         }
 
         // CASE 1: Component dragged from the library
+        // CASE 1: Dragging from the component library
         if (source.type === "library-component") {
-          if (target?.id !== "editor-canvas") {
+          const componentType: unknown = source.data?.componentType;
+
+          if (!isEditorComponentType(componentType)) {
             return;
           }
 
-          const componentType: unknown =
-            source.data?.componentType;
+          // Dropped on an insertion slot.
+          if (
+            typeof target?.id === "string" &&
+            target.id.startsWith("canvas-slot:")
+          ) {
+            const index = Number(target.id.slice("canvas-slot:".length));
 
-          if (isEditorComponentType(componentType)) {
+            if (Number.isInteger(index)) {
+              insertComponentAt(componentType, index);
+            }
+
+            return;
+          }
+
+          // Dropped elsewhere on the white canvas:
+          if (target?.id === "editor-canvas") {
             addComponent(componentType);
           }
 
           return;
         }
-
         // CASE 2: Existing layer being reordered
         if (isSortable(source)) {
           const { initialIndex, index } = source;

@@ -57,6 +57,8 @@ export interface EditorStore {
   markSaved: (savedDocument: EditorDocument) => void;
 
   reorderComponent: (fromIndex: number, toIndex: number) => void;
+
+  insertComponentAt: (type: EditorComponentType, index: number) => void;
 }
 
 type HistoryUpdate = Pick<
@@ -154,7 +156,7 @@ export function createEditorStore(
   // document when initializing the editor.
   const initial = initialDocument ?? createEmptyDocument(projectId);
 
-  return createStore<EditorStore>()((set) => ({
+  return createStore<EditorStore>()((set, get) => ({
     document: initial,
     savedDocument: initial,
 
@@ -165,14 +167,38 @@ export function createEditorStore(
     future: [],
     lastEdit: null,
 
-    // ADD COMPONENT
+    // ADD COMPONENT TO THE END
     addComponent: (type) => {
-      const newComponent = createEditorComponent(type);
+      const index = get().document.components.length;
 
+      get().insertComponentAt(type, index);
+    },
+
+    // INSERT COMPONENT AT A SPECIFIC POSITION
+    insertComponentAt: (type, index) => {
       set((state) => {
+        const components = state.document.components;
+
+        // Validate the insertion position.
+        if (
+          !Number.isInteger(index) ||
+          index < 0 ||
+          index > components.length
+        ) {
+          return state;
+        }
+
+        const newComponent = createEditorComponent(type);
+
+        // Copy the original array.
+        const updatedComponents = [...components];
+
+        // Insert at the requested index.
+        updatedComponents.splice(index, 0, newComponent);
+
         const nextDocument: EditorDocument = {
           ...state.document,
-          components: [...state.document.components, newComponent],
+          components: updatedComponents,
         };
 
         return {
