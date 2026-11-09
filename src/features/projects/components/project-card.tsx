@@ -1,4 +1,4 @@
-import { MoreHorizontal } from "lucide-react";
+import { ProjectActions } from "./project-actions";
 
 import {
   Card,
@@ -70,15 +70,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
         </div>
 
-        {/* Future Project Actions */}
-        <button
-          type="button"
-          disabled
-          aria-label={`More options for ${project.name}`}
-          className="flex size-8 shrink-0 cursor-not-allowed items-center justify-center rounded-lg text-muted-foreground opacity-50"
-        >
-          <MoreHorizontal className="size-4" />
-        </button>
+   <ProjectActions project={project} />
 
       </CardContent>
 

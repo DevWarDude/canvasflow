@@ -1,6 +1,7 @@
 import { openDB, type DBSchema } from "idb";
 
 import type { ProjectSummary } from "../types/project";
+import { createProjectSchema } from "../schemas/create-project-schema";
 
 interface CanvasFlowDatabase extends DBSchema {
   projects: {
@@ -57,4 +58,48 @@ export async function createProject(
   await db.add("projects", project);
 
   return project;
+}
+
+
+
+// Rename an existing project
+export async function renameProject({
+  id,
+  name,
+}: {
+  id: string;
+  name: string;
+}): Promise<ProjectSummary> {
+  const db = await getDatabase();
+
+  const validated = createProjectSchema.parse({ name });
+
+  const project = await db.get("projects", id);
+
+  if (!project) {
+    throw new Error("Project not found");
+  }
+
+  const updatedProject: ProjectSummary = {
+    ...project,
+    name: validated.name,
+    updatedAt: new Date().toISOString(),
+  };
+
+  await db.put("projects", updatedProject);
+
+  return updatedProject;
+}
+
+// Delete an existing project
+export async function deleteProject(id: string): Promise<void> {
+  const db = await getDatabase();
+
+  const project = await db.get("projects", id);
+
+  if (!project) {
+    throw new Error("Project not found");
+  }
+
+  await db.delete("projects", id);
 }
