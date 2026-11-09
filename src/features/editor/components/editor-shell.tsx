@@ -8,6 +8,7 @@ import { EditorToolbar } from "./editor-toolbar";
 import { EditorSidebar } from "./editor-sidebar";
 import { EditorWorkspace } from "./editor-workspace";
 import { PropertiesPanel } from "./properties-panel";
+import { EditorStoreProvider } from "../store/editor-store-provider";
 
 interface EditorShellProps {
   projectId: string;
@@ -85,7 +86,11 @@ export function EditorShell({ projectId }: EditorShellProps) {
   }
 
   return (
-    <>
+     <EditorStoreProvider
+    key={project.id}
+    projectId={project.id}
+  >
+ 
       {/* Mobile / Tablet Message */}
       <div className="grid min-h-dvh place-items-center bg-canvas-editor p-6 text-center text-white lg:hidden">
         <div>
@@ -121,6 +126,7 @@ export function EditorShell({ projectId }: EditorShellProps) {
         </div>
 
       </div>
-    </>
+ 
+  </EditorStoreProvider>
   );
 }
