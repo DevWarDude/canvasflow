@@ -1,4 +1,5 @@
 import { ProjectActions } from "./project-actions";
+import Link from "next/link";
 
 import {
   Card,
@@ -61,8 +62,13 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <div className="min-w-0">
 
           <h3 className="truncate text-sm font-semibold">
-            {project.name}
-          </h3>
+  <Link
+    href={`/projects/${project.id}/editor`}
+    className="transition-colors hover:text-primary hover:underline"
+  >
+    {project.name}
+  </Link>
+</h3>
 
           <p className="mt-1 text-xs text-muted-foreground">
             Edited {formattedDate}
