@@ -4,7 +4,7 @@ import type {
 } from "../types/editor-document";
 
 export function createEditorComponent(
-  type: EditorComponentType
+  type: EditorComponentType,
 ): EditorComponent {
   const id = crypto.randomUUID();
 

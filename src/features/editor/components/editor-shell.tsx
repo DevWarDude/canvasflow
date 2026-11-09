@@ -15,11 +15,7 @@ interface EditorShellProps {
 }
 
 export function EditorShell({ projectId }: EditorShellProps) {
-  const {
-    data: projects,
-    isPending,
-    isError,
-  } = useProjects();
+  const { data: projects, isPending, isError } = useProjects();
 
   // Loading
   if (isPending) {
@@ -38,9 +34,7 @@ export function EditorShell({ projectId }: EditorShellProps) {
     return (
       <div className="grid min-h-dvh place-items-center bg-canvas-editor p-6 text-center text-white">
         <div>
-          <h1 className="text-xl font-semibold">
-            Unable to load project
-          </h1>
+          <h1 className="text-xl font-semibold">Unable to load project</h1>
 
           <p className="mt-3 text-sm text-gray-400">
             Check your browser storage settings.
@@ -57,18 +51,14 @@ export function EditorShell({ projectId }: EditorShellProps) {
     );
   }
 
-  const project = projects?.find(
-    (item) => item.id === projectId
-  );
+  const project = projects?.find((item) => item.id === projectId);
 
   // Project not found
   if (!project) {
     return (
       <div className="grid min-h-dvh place-items-center bg-canvas-editor p-6 text-center text-white">
         <div>
-          <h1 className="text-xl font-semibold">
-            Project not found
-          </h1>
+          <h1 className="text-xl font-semibold">Project not found</h1>
 
           <p className="mt-3 text-sm text-gray-400">
             This project does not exist in your local workspace.
@@ -86,21 +76,14 @@ export function EditorShell({ projectId }: EditorShellProps) {
   }
 
   return (
-     <EditorSession
-    key={project.id}
-    projectId={project.id}
-  >
- 
+    <EditorSession key={project.id} projectId={project.id}>
       {/* Mobile / Tablet Message */}
       <div className="grid min-h-dvh place-items-center bg-canvas-editor p-6 text-center text-white lg:hidden">
         <div>
-          <h1 className="text-xl font-semibold">
-            CanvasFlow Editor
-          </h1>
+          <h1 className="text-xl font-semibold">CanvasFlow Editor</h1>
 
           <p className="mt-3 max-w-sm text-sm leading-6 text-gray-400">
-            The visual editor is currently optimized
-            for desktop screens.
+            The visual editor is currently optimized for desktop screens.
           </p>
 
           <Link
@@ -114,7 +97,6 @@ export function EditorShell({ projectId }: EditorShellProps) {
 
       {/* Desktop Editor */}
       <div className="hidden h-dvh flex-col overflow-hidden bg-canvas-editor text-white lg:flex">
-
         <EditorToolbar projectName={project.name} />
 
         <div className="flex min-h-0 flex-1">
@@ -124,9 +106,7 @@ export function EditorShell({ projectId }: EditorShellProps) {
 
           <PropertiesPanel />
         </div>
-
       </div>
- 
-  </EditorSession>
+    </EditorSession>
   );
 }

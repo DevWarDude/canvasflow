@@ -6,29 +6,21 @@ import { useEditorStore } from "../store/editor-store-provider";
 import { ComponentPreview } from "./component-preview";
 
 export function EditorWorkspace() {
-  const components = useEditorStore(
-    (state) => state.document.components
-  );
+  const components = useEditorStore((state) => state.document.components);
 
   const selectedComponentId = useEditorStore(
-    (state) => state.selectedComponentId
+    (state) => state.selectedComponentId,
   );
 
-  const selectComponent = useEditorStore(
-    (state) => state.selectComponent
-  );
+  const selectComponent = useEditorStore((state) => state.selectComponent);
 
   return (
     <main className="flex min-w-0 flex-1 flex-col bg-canvas-workspace">
       {/* Workspace Header */}
       <div className="flex h-12 shrink-0 items-center justify-between border-b border-gray-200 px-6">
-        <span className="text-xs font-medium text-gray-600">
-          Canvas
-        </span>
+        <span className="text-xs font-medium text-gray-600">Canvas</span>
 
-        <span className="text-xs text-gray-500">
-          Desktop View
-        </span>
+        <span className="text-xs text-gray-500">Desktop View</span>
       </div>
 
       {/* Workspace Content */}
@@ -45,15 +37,13 @@ export function EditorWorkspace() {
               </h2>
 
               <p className="mt-3 max-w-sm text-sm leading-6 text-gray-500">
-                Start building by adding components
-                from the left sidebar.
+                Start building by adding components from the left sidebar.
               </p>
             </div>
           ) : (
             <div className="space-y-5 p-8">
               {components.map((component) => {
-                const isSelected =
-                  selectedComponentId === component.id;
+                const isSelected = selectedComponentId === component.id;
 
                 return (
                   <div
@@ -62,14 +52,9 @@ export function EditorWorkspace() {
                     tabIndex={0}
                     aria-label={`Select ${component.type} component`}
                     aria-pressed={isSelected}
-                    onClick={() =>
-                      selectComponent(component.id)
-                    }
+                    onClick={() => selectComponent(component.id)}
                     onKeyDown={(event) => {
-                      if (
-                        event.key === "Enter" ||
-                        event.key === " "
-                      ) {
+                      if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
                         selectComponent(component.id);
                       }
@@ -80,9 +65,7 @@ export function EditorWorkspace() {
                         : "hover:ring-1 hover:ring-indigo-300 focus-visible:ring-2 focus-visible:ring-indigo-500"
                     }`}
                   >
-                    <ComponentPreview
-                      component={component}
-                    />
+                    <ComponentPreview component={component} />
                   </div>
                 );
               })}

@@ -8,8 +8,6 @@ import {
   deleteProject,
 } from "../lib/project-repository";
 
-
-
 const PROJECTS_QUERY_KEY = ["projects"] as const;
 
 export function useProjects() {
@@ -32,7 +30,6 @@ export function useCreateProject() {
     },
   });
 }
-
 
 // Rename project mutation
 export function useRenameProject() {

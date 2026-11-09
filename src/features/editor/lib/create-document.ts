@@ -1,10 +1,6 @@
-import type {
-  EditorDocument,
-} from "../types/editor-document";
+import type { EditorDocument } from "../types/editor-document";
 
-export function createEmptyDocument(
-  projectId: string
-): EditorDocument {
+export function createEmptyDocument(projectId: string): EditorDocument {
   return {
     schemaVersion: 1,
     projectId,

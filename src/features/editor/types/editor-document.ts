@@ -1,10 +1,6 @@
 // The five component types supported in our MVP
 export type EditorComponentType =
-  | "heading"
-  | "paragraph"
-  | "button"
-  | "image"
-  | "section";
+  "heading" | "paragraph" | "button" | "image" | "section";
 
 // Shared styling properties
 export interface EditorStyles {
@@ -27,10 +23,7 @@ export interface EditorStyles {
 }
 
 // Common structure for editor components
-interface BaseEditorComponent<
-  T extends EditorComponentType,
-  P
-> {
+interface BaseEditorComponent<T extends EditorComponentType, P> {
   id: string;
   type: T;
   props: P;

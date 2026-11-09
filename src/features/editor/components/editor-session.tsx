@@ -14,10 +14,7 @@ interface EditorSessionProps {
   children: ReactNode;
 }
 
-export function EditorSession({
-  projectId,
-  children,
-}: EditorSessionProps) {
+export function EditorSession({ projectId, children }: EditorSessionProps) {
   const {
     data: savedDocument,
     isPending,
@@ -57,8 +54,8 @@ export function EditorSession({
           </h1>
 
           <p className="mt-3 text-sm text-gray-400">
-            Your saved work could not be loaded.
-            Please check browser storage permissions.
+            Your saved work could not be loaded. Please check browser storage
+            permissions.
           </p>
         </div>
       </div>
@@ -71,7 +68,7 @@ export function EditorSession({
       projectId={projectId}
       initialDocument={savedDocument ?? null}
     >
-       <EditorHistoryShortcuts />
+      <EditorHistoryShortcuts />
       {children}
     </EditorStoreProvider>
   );

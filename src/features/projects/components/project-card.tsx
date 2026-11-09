@@ -1,10 +1,7 @@
 import { ProjectActions } from "./project-actions";
 import Link from "next/link";
 
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 import type { ProjectSummary } from "../types/project";
 
@@ -21,12 +18,9 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
   return (
     <Card className="group gap-0 overflow-hidden py-0 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
-
       {/* Project Preview */}
       <div className="flex h-48 items-center justify-center overflow-hidden bg-muted/60 p-5">
-
         <div className="h-full w-full max-w-[280px] overflow-hidden rounded-t-lg border bg-white shadow-sm">
-
           {/* Mock Browser Header */}
           <div className="flex h-7 items-center gap-1.5 border-b px-3">
             <span className="size-1.5 rounded-full bg-red-300" />
@@ -36,7 +30,6 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
           {/* Mock Website Content */}
           <div className="space-y-3 p-5">
-
             <div className="h-2 w-20 rounded bg-primary/30" />
 
             <div className="space-y-2">
@@ -51,35 +44,29 @@ export function ProjectCard({ project }: ProjectCardProps) {
               <div className="h-12 rounded bg-slate-100" />
               <div className="h-12 rounded bg-slate-100" />
             </div>
-
           </div>
         </div>
       </div>
 
       {/* Project Information */}
       <CardContent className="flex items-center justify-between gap-3 p-4">
-
         <div className="min-w-0">
-
           <h3 className="truncate text-sm font-semibold">
-  <Link
-    href={`/projects/${project.id}/editor`}
-    className="transition-colors hover:text-primary hover:underline"
-  >
-    {project.name}
-  </Link>
-</h3>
+            <Link
+              href={`/projects/${project.id}/editor`}
+              className="transition-colors hover:text-primary hover:underline"
+            >
+              {project.name}
+            </Link>
+          </h3>
 
           <p className="mt-1 text-xs text-muted-foreground">
             Edited {formattedDate}
           </p>
-
         </div>
 
-   <ProjectActions project={project} />
-
+        <ProjectActions project={project} />
       </CardContent>
-
     </Card>
   );
 }

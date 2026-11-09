@@ -6,15 +6,7 @@ import Link from "next/link";
 
 import { useQueryClient } from "@tanstack/react-query";
 
-
-import {
-  ArrowLeft,
-  Eye,
-  Save,
-  Layers3,
-  Undo2,
-  Redo2,
-} from "lucide-react";
+import { ArrowLeft, Eye, Save, Layers3, Undo2, Redo2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -26,80 +18,58 @@ interface EditorToolbarProps {
   projectName: string;
 }
 
-export function EditorToolbar({
-  projectName,
-}: EditorToolbarProps) {
+export function EditorToolbar({ projectName }: EditorToolbarProps) {
   const queryClient = useQueryClient();
 
   const [isSaving, setIsSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(
-    null
-  );
+  const [saveError, setSaveError] = useState<string | null>(null);
 
-  const beginSave = useEditorStore(
-  (state) => state.beginSave
-);
+  const beginSave = useEditorStore((state) => state.beginSave);
 
-const canUndo = useEditorStore(
-  (state) => state.past.length > 0
-);
+  const canUndo = useEditorStore((state) => state.past.length > 0);
 
-const canRedo = useEditorStore(
-  (state) => state.future.length > 0
-);
+  const canRedo = useEditorStore((state) => state.future.length > 0);
 
-const undo = useEditorStore(
-  (state) => state.undo
-);
+  const undo = useEditorStore((state) => state.undo);
 
-const redo = useEditorStore(
-  (state) => state.redo
-);
+  const redo = useEditorStore((state) => state.redo);
 
-  const document = useEditorStore(
-    (state) => state.document
-  );
+  const document = useEditorStore((state) => state.document);
 
-  const isDirty = useEditorStore(
-    (state) => state.isDirty
-  );
+  const isDirty = useEditorStore((state) => state.isDirty);
 
-  const markSaved = useEditorStore(
-    (state) => state.markSaved
-  );
+  const markSaved = useEditorStore((state) => state.markSaved);
 
   async function handleSave() {
-  if (!isDirty || isSaving) {
-    return;
+    if (!isDirty || isSaving) {
+      return;
+    }
+
+    const documentToSave = document;
+
+    // End the current typing/style history group.
+    beginSave();
+
+    setIsSaving(true);
+    setSaveError(null);
+
+    try {
+      await saveEditorDocument(documentToSave);
+
+      queryClient.setQueryData(
+        ["editor-document", documentToSave.projectId],
+        documentToSave,
+      );
+
+      markSaved(documentToSave);
+    } catch (error) {
+      console.error("Unable to save document:", error);
+
+      setSaveError("Save failed. Your changes are still unsaved.");
+    } finally {
+      setIsSaving(false);
+    }
   }
-
-  const documentToSave = document;
-
-  // End the current typing/style history group.
-  beginSave();
-
-  setIsSaving(true);
-  setSaveError(null);
-
-  try {
-    await saveEditorDocument(documentToSave);
-
-    queryClient.setQueryData(
-      ["editor-document", documentToSave.projectId],
-      documentToSave
-    );
-
-    markSaved(documentToSave);
-  } catch (error) {
-    console.error("Unable to save document:", error);
-
-    setSaveError(
-      "Save failed. Your changes are still unsaved."
-    );
-  } finally {
-    setIsSaving(false);
-  }
-}
 
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b border-canvas-editor-border bg-canvas-editor-panel px-5">
@@ -118,9 +88,7 @@ const redo = useEditorStore(
         </div>
 
         <div className="min-w-0">
-          <p className="text-xs text-gray-400">
-            CanvasFlow / Editor
-          </p>
+          <p className="text-xs text-gray-400">CanvasFlow / Editor</p>
 
           <h1 className="truncate text-sm font-semibold text-white">
             {projectName}
@@ -135,21 +103,13 @@ const redo = useEditorStore(
           className="hidden max-w-56 text-right text-xs sm:block"
         >
           {saveError ? (
-            <span className="text-red-400">
-              {saveError}
-            </span>
+            <span className="text-red-400">{saveError}</span>
           ) : isSaving ? (
-            <span className="text-gray-400">
-              Saving...
-            </span>
+            <span className="text-gray-400">Saving...</span>
           ) : isDirty ? (
-            <span className="text-amber-400">
-              Unsaved changes
-            </span>
+            <span className="text-amber-400">Unsaved changes</span>
           ) : (
-            <span className="text-gray-400">
-              No unsaved changes
-            </span>
+            <span className="text-gray-400">No unsaved changes</span>
           )}
         </div>
 
@@ -188,10 +148,7 @@ const redo = useEditorStore(
           Preview
         </Button>
 
-        <Button
-          onClick={handleSave}
-          disabled={!isDirty || isSaving}
-        >
+        <Button onClick={handleSave} disabled={!isDirty || isSaving}>
           <Save className="size-4" />
 
           {isSaving ? "Saving..." : "Save"}

@@ -2,11 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 
-import {
-  MoreHorizontal,
-  Pencil,
-  Trash2,
-} from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,10 +34,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-import {
-  useRenameProject,
-  useDeleteProject,
-} from "../hooks/use-projects";
+import { useRenameProject, useDeleteProject } from "../hooks/use-projects";
 
 import { createProjectSchema } from "../schemas/create-project-schema";
 
@@ -83,7 +76,7 @@ export function ProjectActions({ project }: ProjectActionsProps) {
 
     if (!result.success) {
       setRenameError(
-        result.error.issues[0]?.message ?? "Invalid project name."
+        result.error.issues[0]?.message ?? "Invalid project name.",
       );
       return;
     }
@@ -137,10 +130,7 @@ export function ProjectActions({ project }: ProjectActionsProps) {
 
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={openDeleteDialog}
-          >
+          <DropdownMenuItem variant="destructive" onClick={openDeleteDialog}>
             <Trash2 className="size-4" />
             Delete
           </DropdownMenuItem>
@@ -184,9 +174,7 @@ export function ProjectActions({ project }: ProjectActionsProps) {
                 maxLength={60}
                 aria-invalid={Boolean(renameError)}
                 aria-describedby={
-                  renameError
-                    ? `rename-error-${project.id}`
-                    : undefined
+                  renameError ? `rename-error-${project.id}` : undefined
                 }
               />
 
@@ -211,13 +199,8 @@ export function ProjectActions({ project }: ProjectActionsProps) {
                 Cancel
               </Button>
 
-              <Button
-                type="submit"
-                disabled={renameMutation.isPending}
-              >
-                {renameMutation.isPending
-                  ? "Saving..."
-                  : "Save Changes"}
+              <Button type="submit" disabled={renameMutation.isPending}>
+                {renameMutation.isPending ? "Saving..." : "Save Changes"}
               </Button>
             </DialogFooter>
           </form>
@@ -235,14 +218,10 @@ export function ProjectActions({ project }: ProjectActionsProps) {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Delete Project?
-            </AlertDialogTitle>
+            <AlertDialogTitle>Delete Project?</AlertDialogTitle>
 
             <AlertDialogDescription>
-              Are you sure you want to delete
-              {" "}
-              <strong>{project.name}</strong>?
+              Are you sure you want to delete <strong>{project.name}</strong>?
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -254,9 +233,7 @@ export function ProjectActions({ project }: ProjectActionsProps) {
           )}
 
           <AlertDialogFooter>
-            <AlertDialogCancel
-              disabled={deleteMutation.isPending}
-            >
+            <AlertDialogCancel disabled={deleteMutation.isPending}>
               Cancel
             </AlertDialogCancel>
 
@@ -266,9 +243,7 @@ export function ProjectActions({ project }: ProjectActionsProps) {
               disabled={deleteMutation.isPending}
               onClick={() => void handleDelete()}
             >
-              {deleteMutation.isPending
-                ? "Deleting..."
-                : "Delete Project"}
+              {deleteMutation.isPending ? "Deleting..." : "Delete Project"}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -58,38 +58,25 @@ export function CreateProjectDialog() {
   }
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={handleOpenChange}
-    >
-      <DialogTrigger
-        render={<Button type="button" />}
-      >
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger render={<Button type="button" />}>
         <Plus className="size-4" />
         New Project
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            Create New Project
-          </DialogTitle>
+          <DialogTitle>Create New Project</DialogTitle>
 
           <DialogDescription>
-            Give your website a name to get started.
-            Your project will be saved locally.
+            Give your website a name to get started. Your project will be saved
+            locally.
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-5"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
           <div className="space-y-2">
-            <label
-              htmlFor="project-name"
-              className="text-sm font-medium"
-            >
+            <label htmlFor="project-name" className="text-sm font-medium">
               Project Name
             </label>
 
@@ -98,13 +85,9 @@ export function CreateProjectDialog() {
               placeholder="e.g. My Portfolio"
               autoComplete="off"
               maxLength={60}
-              aria-invalid={
-                Boolean(form.formState.errors.name)
-              }
+              aria-invalid={Boolean(form.formState.errors.name)}
               aria-describedby={
-                form.formState.errors.name
-                  ? "project-name-error"
-                  : undefined
+                form.formState.errors.name ? "project-name-error" : undefined
               }
               {...form.register("name")}
             />
@@ -121,12 +104,9 @@ export function CreateProjectDialog() {
           </div>
 
           {createMutation.isError && (
-            <p
-              role="alert"
-              className="text-sm text-destructive"
-            >
-              Unable to save your project. Please check
-              your browser storage settings and try again.
+            <p role="alert" className="text-sm text-destructive">
+              Unable to save your project. Please check your browser storage
+              settings and try again.
             </p>
           )}
 
@@ -140,13 +120,8 @@ export function CreateProjectDialog() {
               Cancel
             </Button>
 
-            <Button
-              type="submit"
-              disabled={createMutation.isPending}
-            >
-              {createMutation.isPending
-                ? "Creating..."
-                : "Create Project"}
+            <Button type="submit" disabled={createMutation.isPending}>
+              {createMutation.isPending ? "Creating..." : "Create Project"}
             </Button>
           </DialogFooter>
         </form>

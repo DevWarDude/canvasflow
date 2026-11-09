@@ -4,14 +4,10 @@ import { SlidersHorizontal } from "lucide-react";
 
 import { useEditorStore } from "../store/editor-store-provider";
 
-import type {
-  EditorComponent,
-} from "../types/editor-document";
+import type { EditorComponent } from "../types/editor-document";
 
 // Return editable text for supported components.
-function getComponentText(
-  component: EditorComponent
-): string | null {
+function getComponentText(component: EditorComponent): string | null {
   switch (component.type) {
     case "heading":
     case "paragraph":
@@ -29,17 +25,16 @@ function getComponentText(
 export function PropertiesPanel() {
   const selectedComponent = useEditorStore((state) =>
     state.document.components.find(
-      (component) =>
-        component.id === state.selectedComponentId
-    )
+      (component) => component.id === state.selectedComponentId,
+    ),
   );
 
   const updateComponentText = useEditorStore(
-    (state) => state.updateComponentText
+    (state) => state.updateComponentText,
   );
 
   const updateComponentStyle = useEditorStore(
-    (state) => state.updateComponentStyle
+    (state) => state.updateComponentStyle,
   );
 
   const textValue = selectedComponent
@@ -72,9 +67,7 @@ export function PropertiesPanel() {
 
       {!selectedComponent ? (
         <div className="px-6 py-16 text-center">
-          <h3 className="text-sm font-medium text-white">
-            Nothing selected
-          </h3>
+          <h3 className="text-sm font-medium text-white">Nothing selected</h3>
 
           <p className="mt-3 text-xs leading-5 text-gray-400">
             Select a component to edit its properties.
@@ -84,9 +77,7 @@ export function PropertiesPanel() {
         <div className="space-y-6 p-5">
           {/* Component information */}
           <div className="border-b border-canvas-editor-border pb-5">
-            <p className="text-xs text-gray-400">
-              Selected Component
-            </p>
+            <p className="text-xs text-gray-400">Selected Component</p>
 
             <h3 className="mt-2 text-sm font-semibold capitalize text-white">
               {selectedComponent.type}
@@ -111,10 +102,7 @@ export function PropertiesPanel() {
                 id="component-content"
                 value={textValue}
                 onChange={(event) =>
-                  updateComponentText(
-                    selectedComponent.id,
-                    event.target.value
-                  )
+                  updateComponentText(selectedComponent.id, event.target.value)
                 }
                 rows={4}
                 className="w-full resize-y rounded-lg border border-canvas-editor-border bg-white/5 p-3 text-sm text-white outline-none focus:border-indigo-500"
@@ -143,9 +131,7 @@ export function PropertiesPanel() {
                   type="number"
                   min={1}
                   max={150}
-                  value={
-                    selectedComponent.styles.fontSize ?? 16
-                  }
+                  value={selectedComponent.styles.fontSize ?? 16}
                   onChange={(event) => {
                     const value = event.target.value;
 
@@ -158,10 +144,7 @@ export function PropertiesPanel() {
                       fontSize >= 1 &&
                       fontSize <= 150
                     ) {
-                      updateComponentStyle(
-                        selectedComponent.id,
-                        { fontSize }
-                      );
+                      updateComponentStyle(selectedComponent.id, { fontSize });
                     }
                   }}
                   className="h-10 w-full rounded-lg border border-canvas-editor-border bg-white/5 px-3 text-sm text-white outline-none focus:border-indigo-500"
@@ -188,19 +171,15 @@ export function PropertiesPanel() {
                         : "#111827")
                     }
                     onChange={(event) =>
-                      updateComponentStyle(
-                        selectedComponent.id,
-                        {
-                          color: event.target.value,
-                        }
-                      )
+                      updateComponentStyle(selectedComponent.id, {
+                        color: event.target.value,
+                      })
                     }
                     className="h-10 w-12 cursor-pointer rounded border border-canvas-editor-border bg-transparent"
                   />
 
                   <span className="text-xs text-gray-300">
-                    {selectedComponent.styles.color ??
-                      "Default"}
+                    {selectedComponent.styles.color ?? "Default"}
                   </span>
                 </div>
               </div>
@@ -217,20 +196,12 @@ export function PropertiesPanel() {
 
                   <select
                     id="component-text-align"
-                    value={
-                      selectedComponent.styles.textAlign ??
-                      "left"
-                    }
+                    value={selectedComponent.styles.textAlign ?? "left"}
                     onChange={(event) =>
-                      updateComponentStyle(
-                        selectedComponent.id,
-                        {
-                          textAlign: event.target.value as
-                            | "left"
-                            | "center"
-                            | "right",
-                        }
-                      )
+                      updateComponentStyle(selectedComponent.id, {
+                        textAlign: event.target.value as
+                          "left" | "center" | "right",
+                      })
                     }
                     className="h-10 w-full rounded-lg border border-canvas-editor-border bg-[#25252d] px-3 text-sm text-white outline-none focus:border-indigo-500"
                   >
@@ -262,17 +233,12 @@ export function PropertiesPanel() {
                 type="color"
                 value={
                   selectedComponent.styles.backgroundColor ??
-                  (selectedComponent.type === "button"
-                    ? "#635BFF"
-                    : "#F8FAFC")
+                  (selectedComponent.type === "button" ? "#635BFF" : "#F8FAFC")
                 }
                 onChange={(event) =>
-                  updateComponentStyle(
-                    selectedComponent.id,
-                    {
-                      backgroundColor: event.target.value,
-                    }
-                  )
+                  updateComponentStyle(selectedComponent.id, {
+                    backgroundColor: event.target.value,
+                  })
                 }
                 className="h-10 w-12 cursor-pointer rounded border border-canvas-editor-border bg-transparent"
               />
@@ -281,8 +247,8 @@ export function PropertiesPanel() {
 
           {selectedComponent.type === "image" && (
             <p className="text-xs leading-5 text-gray-400">
-              Image source and upload controls will be
-              implemented in a later milestone.
+              Image source and upload controls will be implemented in a later
+              milestone.
             </p>
           )}
         </div>

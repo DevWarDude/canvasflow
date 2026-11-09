@@ -1,8 +1,6 @@
 import { openDB, type DBSchema } from "idb";
 
-import type {
-  EditorDocument,
-} from "../types/editor-document";
+import type { EditorDocument } from "../types/editor-document";
 
 interface CanvasFlowEditorDB extends DBSchema {
   documents: {
@@ -12,36 +10,29 @@ interface CanvasFlowEditorDB extends DBSchema {
 }
 
 function getEditorDB() {
-  return openDB<CanvasFlowEditorDB>(
-    "canvasflow-editor-documents",
-    1,
-    {
-      upgrade(db) {
-        db.createObjectStore("documents", {
-          keyPath: "projectId",
-        });
-      },
-    }
-  );
+  return openDB<CanvasFlowEditorDB>("canvasflow-editor-documents", 1, {
+    upgrade(db) {
+      db.createObjectStore("documents", {
+        keyPath: "projectId",
+      });
+    },
+  });
 }
 
 // Load a saved document for one project.
 export async function getEditorDocument(
-  projectId: string
+  projectId: string,
 ): Promise<EditorDocument | null> {
   const db = await getEditorDB();
 
-  const document = await db.get(
-    "documents",
-    projectId
-  );
+  const document = await db.get("documents", projectId);
 
   return document ?? null;
 }
 
 // Save or update a project's document.
 export async function saveEditorDocument(
-  document: EditorDocument
+  document: EditorDocument,
 ): Promise<void> {
   const db = await getEditorDB();
 

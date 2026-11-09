@@ -14,19 +14,15 @@ const DATABASE_NAME = "canvasflow-db";
 const DATABASE_VERSION = 1;
 
 function getDatabase() {
-  return openDB<CanvasFlowDatabase>(
-    DATABASE_NAME,
-    DATABASE_VERSION,
-    {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains("projects")) {
-          db.createObjectStore("projects", {
-            keyPath: "id",
-          });
-        }
-      },
-    }
-  );
+  return openDB<CanvasFlowDatabase>(DATABASE_NAME, DATABASE_VERSION, {
+    upgrade(db) {
+      if (!db.objectStoreNames.contains("projects")) {
+        db.createObjectStore("projects", {
+          keyPath: "id",
+        });
+      }
+    },
+  });
 }
 
 export async function getProjects(): Promise<ProjectSummary[]> {
@@ -35,15 +31,11 @@ export async function getProjects(): Promise<ProjectSummary[]> {
   const projects = await db.getAll("projects");
 
   return projects.sort(
-    (a, b) =>
-      new Date(b.updatedAt).getTime() -
-      new Date(a.updatedAt).getTime()
+    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
   );
 }
 
-export async function createProject(
-  name: string
-): Promise<ProjectSummary> {
+export async function createProject(name: string): Promise<ProjectSummary> {
   const db = await getDatabase();
 
   const timestamp = new Date().toISOString();
@@ -59,8 +51,6 @@ export async function createProject(
 
   return project;
 }
-
-
 
 // Rename an existing project
 export async function renameProject({

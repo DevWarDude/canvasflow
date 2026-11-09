@@ -5,26 +5,17 @@ import { useEffect } from "react";
 import { useEditorStore } from "../store/editor-store-provider";
 
 export function EditorHistoryShortcuts() {
-  const undo = useEditorStore(
-    (state) => state.undo
-  );
+  const undo = useEditorStore((state) => state.undo);
 
-  const redo = useEditorStore(
-    (state) => state.redo
-  );
+  const redo = useEditorStore((state) => state.redo);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (
-        event.defaultPrevented ||
-        event.isComposing ||
-        event.altKey
-      ) {
+      if (event.defaultPrevented || event.isComposing || event.altKey) {
         return;
       }
 
-      const isModifierPressed =
-        event.ctrlKey || event.metaKey;
+      const isModifierPressed = event.ctrlKey || event.metaKey;
 
       if (!isModifierPressed) {
         return;
@@ -36,7 +27,7 @@ export function EditorHistoryShortcuts() {
       if (
         target instanceof Element &&
         target.closest(
-          "input, textarea, select, [contenteditable], [role='textbox']"
+          "input, textarea, select, [contenteditable], [role='textbox']",
         )
       ) {
         return;
@@ -50,10 +41,7 @@ export function EditorHistoryShortcuts() {
         return;
       }
 
-      if (
-        (key === "z" && event.shiftKey) ||
-        (key === "y" && !event.shiftKey)
-      ) {
+      if ((key === "z" && event.shiftKey) || (key === "y" && !event.shiftKey)) {
         event.preventDefault();
         redo();
       }
@@ -62,10 +50,7 @@ export function EditorHistoryShortcuts() {
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.removeEventListener(
-        "keydown",
-        handleKeyDown
-      );
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [undo, redo]);
 

@@ -8,6 +8,4 @@ export const createProjectSchema = z.object({
     .max(60, "Project name cannot exceed 60 characters."),
 });
 
-export type CreateProjectInput = z.infer<
-  typeof createProjectSchema
->;
+export type CreateProjectInput = z.infer<typeof createProjectSchema>;

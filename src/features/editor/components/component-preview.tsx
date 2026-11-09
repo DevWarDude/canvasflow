@@ -1,51 +1,28 @@
-import type {
-  EditorComponent,
-} from "../types/editor-document";
+import type { EditorComponent } from "../types/editor-document";
 
 interface ComponentPreviewProps {
   component: EditorComponent;
 }
 
-export function ComponentPreview({
-  component,
-}: ComponentPreviewProps) {
+export function ComponentPreview({ component }: ComponentPreviewProps) {
   switch (component.type) {
     case "heading":
       if (component.props.level === 1) {
-        return (
-          <h1 style={component.styles}>
-            {component.props.text}
-          </h1>
-        );
+        return <h1 style={component.styles}>{component.props.text}</h1>;
       }
 
       if (component.props.level === 2) {
-        return (
-          <h2 style={component.styles}>
-            {component.props.text}
-          </h2>
-        );
+        return <h2 style={component.styles}>{component.props.text}</h2>;
       }
 
-      return (
-        <h3 style={component.styles}>
-          {component.props.text}
-        </h3>
-      );
+      return <h3 style={component.styles}>{component.props.text}</h3>;
 
     case "paragraph":
-      return (
-        <p style={component.styles}>
-          {component.props.text}
-        </p>
-      );
+      return <p style={component.styles}>{component.props.text}</p>;
 
     case "button":
       return (
-        <span
-          style={component.styles}
-          className="inline-block"
-        >
+        <span style={component.styles} className="inline-block">
           {component.props.label}
         </span>
       );
@@ -63,9 +40,7 @@ export function ComponentPreview({
     case "section":
       return (
         <section style={component.styles}>
-          <p className="text-sm text-gray-500">
-            {component.props.label}
-          </p>
+          <p className="text-sm text-gray-500">{component.props.label}</p>
         </section>
       );
   }
