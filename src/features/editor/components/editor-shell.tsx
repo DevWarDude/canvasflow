@@ -9,6 +9,7 @@ import { EditorSidebar } from "./editor-sidebar";
 import { EditorWorkspace } from "./editor-workspace";
 import { PropertiesPanel } from "./properties-panel";
 import { EditorSession } from "./editor-session";
+import { EditorDndProvider } from "./editor-dnd-provider";
 
 interface EditorShellProps {
   projectId: string;
@@ -96,17 +97,17 @@ export function EditorShell({ projectId }: EditorShellProps) {
       </div>
 
       {/* Desktop Editor */}
-      <div className="hidden h-dvh flex-col overflow-hidden bg-canvas-editor text-white lg:flex">
-        <EditorToolbar projectName={project.name} />
+    <EditorDndProvider>
+  <div className="hidden h-dvh flex-col overflow-hidden bg-canvas-editor text-white lg:flex">
+    <EditorToolbar projectName={project.name} />
 
-        <div className="flex min-h-0 flex-1">
-          <EditorSidebar />
-
-          <EditorWorkspace />
-
-          <PropertiesPanel />
-        </div>
-      </div>
+    <div className="flex min-h-0 flex-1">
+      <EditorSidebar />
+      <EditorWorkspace />
+      <PropertiesPanel />
+    </div>
+  </div>
+</EditorDndProvider>
     </EditorSession>
   );
 }

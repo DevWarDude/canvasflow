@@ -10,14 +10,13 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { DragDropProvider } from "@dnd-kit/react";
-
-import { isSortable } from "@dnd-kit/react/sortable";
-
-import type { EditorComponentType } from "../types/editor-document";
+import type {
+  EditorComponentType,
+} from "../types/editor-document";
 
 import { useEditorStore } from "../store/editor-store-provider";
 
+import { DraggableLibraryItem } from "./draggable-library-item";
 import { SortableLayerItem } from "./sortable-layer-item";
 
 interface LibraryItem {
@@ -55,21 +54,29 @@ const libraryItems: LibraryItem[] = [
 ];
 
 export function EditorSidebar() {
-  const components = useEditorStore((state) => state.document.components);
-
-  const selectedComponentId = useEditorStore(
-    (state) => state.selectedComponentId,
+  const components = useEditorStore(
+    (state) => state.document.components
   );
 
-  const addComponent = useEditorStore((state) => state.addComponent);
+  const selectedComponentId = useEditorStore(
+    (state) => state.selectedComponentId
+  );
 
-  const selectComponent = useEditorStore((state) => state.selectComponent);
+  const addComponent = useEditorStore(
+    (state) => state.addComponent
+  );
 
-  const removeComponent = useEditorStore((state) => state.removeComponent);
+  const selectComponent = useEditorStore(
+    (state) => state.selectComponent
+  );
 
-  const moveComponent = useEditorStore((state) => state.moveComponent);
+  const removeComponent = useEditorStore(
+    (state) => state.removeComponent
+  );
 
-  const reorderComponent = useEditorStore((state) => state.reorderComponent);
+  const moveComponent = useEditorStore(
+    (state) => state.moveComponent
+  );
 
   return (
     <aside className="flex w-64 shrink-0 flex-col border-r border-canvas-editor-border bg-canvas-editor-panel">
@@ -80,23 +87,21 @@ export function EditorSidebar() {
         </h2>
 
         <div className="grid grid-cols-2 gap-3">
-          {libraryItems.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <button
-                key={item.type}
-                type="button"
-                onClick={() => addComponent(item.type)}
-                className="flex h-24 flex-col items-center justify-center gap-3 rounded-xl border border-canvas-editor-border bg-white/5 text-gray-300 transition-colors hover:border-indigo-500 hover:bg-white/10"
-              >
-                <Icon className="size-5" />
-
-                <span className="text-xs">{item.name}</span>
-              </button>
-            );
-          })}
+          {libraryItems.map((item) => (
+            <DraggableLibraryItem
+              key={item.type}
+              name={item.name}
+              type={item.type}
+              icon={item.icon}
+              onAdd={addComponent}
+            />
+          ))}
         </div>
+
+        <p className="mt-4 text-xs leading-5 text-gray-500">
+          Click to add, or use the grip icon
+          to drag a component onto the canvas.
+        </p>
       </section>
 
       {/* LAYERS PANEL */}
@@ -111,44 +116,35 @@ export function EditorSidebar() {
 
         <div className="min-h-0 flex-1 overflow-y-auto">
           {components.length === 0 ? (
-            <p className="text-xs text-gray-500">No components added yet.</p>
+            <p className="text-xs text-gray-500">
+              No components added yet.
+            </p>
           ) : (
-            <DragDropProvider
-              onDragEnd={(event) => {
-                if (event.canceled) {
-                  return;
-                }
-
-                const { source } = event.operation;
-
-                if (!isSortable(source)) {
-                  return;
-                }
-
-                const { initialIndex, index } = source;
-
-                if (initialIndex !== index) {
-                  reorderComponent(initialIndex, index);
-                }
-              }}
-            >
-              <div className="flex flex-col gap-2">
-                {components.map((component, index) => (
-                  <SortableLayerItem
-                    key={component.id}
-                    component={component}
-                    index={index}
-                    total={components.length}
-                    isSelected={selectedComponentId === component.id}
-                    onSelect={() => selectComponent(component.id)}
-                    onMove={(direction) =>
-                      moveComponent(component.id, direction)
-                    }
-                    onDelete={() => removeComponent(component.id)}
-                  />
-                ))}
-              </div>
-            </DragDropProvider>
+            <div className="flex flex-col gap-2">
+              {components.map((component, index) => (
+                <SortableLayerItem
+                  key={component.id}
+                  component={component}
+                  index={index}
+                  total={components.length}
+                  isSelected={
+                    selectedComponentId === component.id
+                  }
+                  onSelect={() =>
+                    selectComponent(component.id)
+                  }
+                  onMove={(direction) =>
+                    moveComponent(
+                      component.id,
+                      direction
+                    )
+                  }
+                  onDelete={() =>
+                    removeComponent(component.id)
+                  }
+                />
+              ))}
+            </div>
           )}
         </div>
       </section>

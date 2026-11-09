@@ -4,6 +4,7 @@ import { LayoutTemplate } from "lucide-react";
 
 import { useEditorStore } from "../store/editor-store-provider";
 import { ComponentPreview } from "./component-preview";
+import { useDroppable } from "@dnd-kit/react";
 
 export function EditorWorkspace() {
   const components = useEditorStore((state) => state.document.components);
@@ -13,6 +14,15 @@ export function EditorWorkspace() {
   );
 
   const selectComponent = useEditorStore((state) => state.selectComponent);
+
+  const {
+  ref: canvasRef,
+  isDropTarget,
+} = useDroppable({
+  id: "editor-canvas",
+  type: "canvas",
+  accept: "library-component",
+});
 
   return (
     <main className="flex min-w-0 flex-1 flex-col bg-canvas-workspace">
@@ -25,7 +35,19 @@ export function EditorWorkspace() {
 
       {/* Workspace Content */}
       <div className="flex min-h-0 flex-1 justify-center overflow-auto p-8">
-        <div className="min-h-[650px] w-full max-w-3xl self-start rounded-lg border border-gray-200 bg-white shadow-xl">
+        <div
+  ref={canvasRef}
+  className={`relative min-h-[650px] w-full max-w-3xl self-start rounded-lg border bg-white shadow-xl transition-all ${
+    isDropTarget
+      ? "border-indigo-500 ring-4 ring-indigo-500/20"
+      : "border-gray-200"
+  }`}
+>
+
+  {/* Visual feedback when a component is dragged over the canvas */}
+{isDropTarget && (
+  <div className="pointer-events-none absolute inset-2 z-10 rounded-lg border-2 border-dashed border-indigo-500 bg-indigo-500/5" />
+)}
           {components.length === 0 ? (
             <div className="flex min-h-[650px] flex-col items-center justify-center px-6 text-center">
               <div className="mb-6 flex size-16 items-center justify-center rounded-2xl bg-[#635BFF]/10">
