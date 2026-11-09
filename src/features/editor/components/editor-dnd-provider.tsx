@@ -73,13 +73,32 @@ export function EditorDndProvider({ children }: EditorDndProviderProps) {
 
           return;
         }
-        // CASE 2: Existing layer being reordered
+        // CASE 2: Reordering existing components
         if (isSortable(source)) {
-          const { initialIndex, index } = source;
+          // Accept sortable operations from our two editor groups.
+          const isEditorSortable =
+            source.type === "layer-component" ||
+            source.type === "canvas-component";
 
-          if (initialIndex !== index) {
-            reorderComponent(initialIndex, index);
+          if (!isEditorSortable) {
+            return;
           }
+
+          const { initialIndex, index, initialGroup, group } = source;
+
+          // Don't move components between sortable groups.
+          if (initialGroup !== group) {
+            return;
+          }
+
+          // Nothing changed.
+          if (initialIndex === index) {
+            return;
+          }
+
+          // Both the Layers panel and canvas use
+          // the same document array.
+          reorderComponent(initialIndex, index);
         }
       }}
     >

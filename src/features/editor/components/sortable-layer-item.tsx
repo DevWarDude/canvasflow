@@ -16,8 +16,6 @@ interface SortableLayerItemProps {
   onDelete: () => void;
 }
 
-
-
 export function SortableLayerItem({
   component,
   index,
@@ -27,18 +25,13 @@ export function SortableLayerItem({
   onMove,
   onDelete,
 }: SortableLayerItemProps) {
-
-const {
-  ref,
-  handleRef,
-  isDragSource,
-  isDropTarget,
-} = useSortable({
-  id: component.id,
-  index,
-  type: "layer-component",
-  accept: "layer-component",
-});
+  const { ref, handleRef, isDragSource, isDropTarget } = useSortable({
+    id: `layer:${component.id}`,
+    index,
+    group: "layers",
+    type: "layer-component",
+    accept: "layer-component",
+  });
   return (
     <div
       ref={ref}
