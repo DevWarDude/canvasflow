@@ -19,9 +19,7 @@ import { CanvasInsertionSlot } from "./canvas-insertion-slot";
 import { ComponentPreview } from "./component-preview";
 import { SortableCanvasItem } from "./sortable-canvas-item";
 
-
 // VIEWPORT CONFIGURATION
-
 
 const viewportOptions = [
   {
@@ -46,48 +44,32 @@ const viewportOptions = [
 
 type ViewportMode = (typeof viewportOptions)[number]["id"];
 
-
 // EDITOR WORKSPACE
 
-
 export function EditorWorkspace() {
-  
   // ZUSTAND EDITOR STATE
-  
 
-  const components = useEditorStore(
-    (state) => state.document.components,
-  );
+  const components = useEditorStore((state) => state.document.components);
 
   const selectedComponentId = useEditorStore(
     (state) => state.selectedComponentId,
   );
 
-  const selectComponent = useEditorStore(
-    (state) => state.selectComponent,
-  );
+  const selectComponent = useEditorStore((state) => state.selectComponent);
 
-  
   // LOCAL UI STATE
-  
 
-  const [viewport, setViewport] =
-    useState<ViewportMode>("desktop");
+  const [viewport, setViewport] = useState<ViewportMode>("desktop");
 
   const [isPreview, setIsPreview] = useState(false);
 
-  
   // CURRENT VIEWPORT
-  
 
   const currentViewport =
-    viewportOptions.find(
-      (option) => option.id === viewport,
-    ) ?? viewportOptions[0];
+    viewportOptions.find((option) => option.id === viewport) ??
+    viewportOptions[0];
 
-  
   // CANVAS DRAG AND DROP
-  
 
   const { ref: canvasRef, isDropTarget } = useDroppable({
     id: "editor-canvas",
@@ -96,9 +78,7 @@ export function EditorWorkspace() {
     disabled: isPreview,
   });
 
-  
   // RENDER
-  
 
   return (
     <main className="flex min-w-0 flex-1 flex-col bg-canvas-workspace">
@@ -110,9 +90,7 @@ export function EditorWorkspace() {
         {/* Left: Canvas Information */}
 
         <div className="shrink-0">
-          <h2 className="text-xs font-semibold text-gray-700">
-            Canvas
-          </h2>
+          <h2 className="text-xs font-semibold text-gray-700">Canvas</h2>
 
           <p className="mt-1 text-[11px] text-gray-500">
             {viewport === "desktop"
@@ -154,9 +132,7 @@ export function EditorWorkspace() {
                 >
                   <Icon className="size-4" />
 
-                  <span className="hidden xl:inline">
-                    {option.label}
-                  </span>
+                  <span className="hidden xl:inline">{option.label}</span>
                 </button>
               );
             })}
@@ -168,9 +144,7 @@ export function EditorWorkspace() {
 
           <button
             type="button"
-            onClick={() =>
-              setIsPreview((previous) => !previous)
-            }
+            onClick={() => setIsPreview((previous) => !previous)}
             aria-pressed={isPreview}
             className={`flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-xs font-medium transition-colors ${
               isPreview
@@ -206,16 +180,11 @@ export function EditorWorkspace() {
           ref={canvasRef}
           style={{
             width:
-              viewport === "desktop"
-                ? "100%"
-                : `${currentViewport.width}px`,
+              viewport === "desktop" ? "100%" : `${currentViewport.width}px`,
 
-            maxWidth:
-              viewport === "desktop"
-                ? "1100px"
-                : undefined,
+            maxWidth: viewport === "desktop" ? "1100px" : undefined,
           }}
-          className={`relative mx-auto min-h-[650px] rounded-lg border bg-white shadow-xl transition-[width] duration-300 ${
+          className={`@container/canvas relative mx-auto min-h-[650px] rounded-lg border bg-white shadow-xl transition-[width] duration-300 ${
             !isPreview && isDropTarget
               ? "border-indigo-500 ring-4 ring-indigo-500/20"
               : "border-gray-200"
@@ -234,11 +203,11 @@ export function EditorWorkspace() {
            */}
 
           {isPreview ? (
-            <div className="space-y-5 p-8">
+            <div className="space-y-5 p-8 @max-[480px]/canvas:space-y-3 @max-[480px]/canvas:p-4">
               {components.map((component) => (
                 <div
                   key={component.id}
-                  className="min-w-0 break-words"
+                  className="min-w-0 [overflow-wrap:anywhere] [&_img]:h-auto [&_img]:max-w-full [&_video]:max-w-full [&_iframe]:max-w-full"
                 >
                   <ComponentPreview component={component} />
                 </div>
@@ -259,8 +228,7 @@ export function EditorWorkspace() {
               </h2>
 
               <p className="mt-3 max-w-sm text-sm leading-6 text-gray-500">
-                Start building by adding components from the
-                left sidebar.
+                Start building by adding components from the left sidebar.
               </p>
             </div>
           ) : (
@@ -268,7 +236,7 @@ export function EditorWorkspace() {
                 EDIT MODE
              */
 
-            <div className="flex flex-col p-8">
+            <div className="flex flex-col p-8 @max-[480px]/canvas:p-4">
               {/* Insert before the first component */}
 
               <CanvasInsertionSlot index={0} />
@@ -282,19 +250,13 @@ export function EditorWorkspace() {
                   <SortableCanvasItem
                     component={component}
                     index={index}
-                    isSelected={
-                      selectedComponentId === component.id
-                    }
-                    onSelect={() =>
-                      selectComponent(component.id)
-                    }
+                    isSelected={selectedComponentId === component.id}
+                    onSelect={() => selectComponent(component.id)}
                   />
 
                   {/* Insert after this component */}
 
-                  <CanvasInsertionSlot
-                    index={index + 1}
-                  />
+                  <CanvasInsertionSlot index={index + 1} />
                 </Fragment>
               ))}
             </div>

@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 import type { EditorComponent } from "../types/editor-document";
 
 interface ComponentPreviewProps {
@@ -6,42 +8,102 @@ interface ComponentPreviewProps {
 
 export function ComponentPreview({ component }: ComponentPreviewProps) {
   switch (component.type) {
-    case "heading":
+    // HEADING
+
+    case "heading": {
+      const headingStyles: CSSProperties & {
+        "--cf-heading-size": string;
+      } = {
+        ...component.styles,
+
+        fontSize: undefined,
+
+        "--cf-heading-size": `${component.styles.fontSize ?? 32}px`,
+      };
+
+      const headingClassName =
+        "max-w-full [overflow-wrap:anywhere] [font-size:var(--cf-heading-size)] @max-[480px]/canvas:[font-size:min(var(--cf-heading-size),8cqw)]";
+
       if (component.props.level === 1) {
-        return <h1 style={component.styles}>{component.props.text}</h1>;
+        return (
+          <h1 style={headingStyles} className={headingClassName}>
+            {component.props.text}
+          </h1>
+        );
       }
 
       if (component.props.level === 2) {
-        return <h2 style={component.styles}>{component.props.text}</h2>;
+        return (
+          <h2 style={headingStyles} className={headingClassName}>
+            {component.props.text}
+          </h2>
+        );
       }
 
-      return <h3 style={component.styles}>{component.props.text}</h3>;
+      return (
+        <h3 style={headingStyles} className={headingClassName}>
+          {component.props.text}
+        </h3>
+      );
+    }
+
+    // PARAGRAPH
 
     case "paragraph":
-      return <p style={component.styles}>{component.props.text}</p>;
+      return (
+        <p
+          style={component.styles}
+          className="max-w-full [overflow-wrap:anywhere]"
+        >
+          {component.props.text}
+        </p>
+      );
+
+    // BUTTON
 
     case "button":
       return (
-        <span style={component.styles} className="inline-block">
+        <span
+          style={component.styles}
+          className="inline-block max-w-full whitespace-normal [overflow-wrap:anywhere]"
+        >
           {component.props.label}
         </span>
       );
+
+    // IMAGE PLACEHOLDER
 
     case "image":
       return (
         <div
           style={component.styles}
-          className="flex items-center justify-center border border-dashed border-gray-300 bg-gray-50 text-sm text-gray-400"
+          className="flex max-w-full min-w-0 items-center justify-center overflow-hidden border border-dashed border-gray-300 bg-gray-50 text-center text-sm text-gray-400"
         >
           Image placeholder
         </div>
       );
 
-    case "section":
+    // SECTION
+
+    case "section": {
+      const sectionStyles: CSSProperties & {
+        "--cf-section-padding": string;
+      } = {
+        ...component.styles,
+
+        padding: undefined,
+
+        "--cf-section-padding": `${component.styles.padding ?? 0}px`,
+      };
+
       return (
-        <section style={component.styles}>
+        <section
+          style={sectionStyles}
+          className="max-w-full min-w-0 [overflow-wrap:anywhere] [padding:var(--cf-section-padding)] @max-[480px]/canvas:[padding:min(var(--cf-section-padding),5cqw)]"
+        >
           <p className="text-sm text-gray-500">{component.props.label}</p>
         </section>
       );
+    }
   }
 }
