@@ -6,11 +6,41 @@ import { useEditorStore } from "../store/editor-store-provider";
 import { useDroppable } from "@dnd-kit/react";
 import { CanvasInsertionSlot } from "./canvas-insertion-slot";
 import { Fragment } from "react";
+import { useState } from "react";
+import { Monitor, Tablet, Smartphone } from "lucide-react";
 
 import { SortableCanvasItem } from "./sortable-canvas-item";
 
+const viewportOptions = [
+  {
+    id: "desktop",
+    label: "Desktop",
+    width: 1100,
+    icon: Monitor,
+  },
+  {
+    id: "tablet",
+    label: "Tablet",
+    width: 768,
+    icon: Tablet,
+  },
+  {
+    id: "mobile",
+    label: "Mobile",
+    width: 390,
+    icon: Smartphone,
+  },
+] as const;
+
+type ViewportMode = (typeof viewportOptions)[number]["id"];
+
 export function EditorWorkspace() {
   const components = useEditorStore((state) => state.document.components);
+  const [viewport, setViewport] = useState<ViewportMode>("desktop");
+
+  const currentViewport =
+    viewportOptions.find((option) => option.id === viewport) ??
+    viewportOptions[0];
 
   const selectedComponentId = useEditorStore(
     (state) => state.selectedComponentId,
@@ -26,18 +56,61 @@ export function EditorWorkspace() {
 
   return (
     <main className="flex min-w-0 flex-1 flex-col bg-canvas-workspace">
-      {/* Workspace Header */}
-      <div className="flex h-12 shrink-0 items-center justify-between border-b border-gray-200 px-6">
-        <span className="text-xs font-medium text-gray-600">Canvas</span>
+      <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-gray-200 px-4">
+        <div>
+          <h2 className="text-xs font-semibold text-gray-700">Canvas</h2>
 
-        <span className="text-xs text-gray-500">Desktop View</span>
+          <p className="mt-1 text-[11px] text-gray-500">
+            {viewport === "desktop"
+              ? "Up to 1100px"
+              : `${currentViewport.width}px`}
+          </p>
+        </div>
+
+        <div
+          role="group"
+          aria-label="Canvas viewport size"
+          className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-1"
+        >
+          {viewportOptions.map((option) => {
+            const Icon = option.icon;
+
+            const isActive = viewport === option.id;
+
+            return (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => setViewport(option.id)}
+                aria-label={`${option.label} viewport`}
+                aria-pressed={isActive}
+                title={option.label}
+                className={`flex items-center gap-2 rounded-md px-3 py-2 text-xs transition-colors ${
+                  isActive
+                    ? "bg-indigo-500 text-white"
+                    : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                }`}
+              >
+                <Icon className="size-4" />
+
+                <span className="hidden xl:inline">{option.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Workspace Content */}
-      <div className="flex min-h-0 flex-1 justify-center overflow-auto p-8">
+      <div className="min-h-0 flex-1 overflow-auto p-8">
         <div
           ref={canvasRef}
-          className={`relative min-h-[650px] w-full max-w-3xl self-start rounded-lg border bg-white shadow-xl transition-all ${
+          style={{
+            width:
+              viewport === "desktop" ? "100%" : `${currentViewport.width}px`,
+
+            maxWidth: viewport === "desktop" ? "1100px" : undefined,
+          }}
+          className={`relative mx-auto min-h-[650px] rounded-lg border bg-white shadow-xl transition-[width] duration-300 ${
             isDropTarget
               ? "border-indigo-500 ring-4 ring-indigo-500/20"
               : "border-gray-200"
