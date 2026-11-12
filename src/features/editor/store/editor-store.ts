@@ -8,6 +8,7 @@ import type {
   EditorComponentType,
   EditorDocument,
   EditorStyles,
+  ImageComponent,
 } from "../types/editor-document";
 
 const HISTORY_LIMIT = 50;
@@ -59,6 +60,11 @@ export interface EditorStore {
   reorderComponent: (fromIndex: number, toIndex: number) => void;
 
   insertComponentAt: (type: EditorComponentType, index: number) => void;
+
+  updateImageProps: (
+    id: string,
+    props: Partial<ImageComponent["props"]>,
+  ) => void;
 }
 
 type HistoryUpdate = Pick<
@@ -322,6 +328,57 @@ export function createEditorStore(
           componentId: id,
           field: keys.sort().join(","),
         });
+      });
+    },
+
+    updateImageProps: (id, props) => {
+      set((state) => {
+        const target = state.document.components.find(
+          (component) => component.id === id,
+        );
+
+        if (!target || target.type !== "image") {
+          return state;
+        }
+
+        const nextProps = {
+          ...target.props,
+          ...props,
+        };
+
+        if (
+          nextProps.src === target.props.src &&
+          nextProps.alt === target.props.alt
+        ) {
+          return state;
+        }
+
+        const nextDocument: EditorDocument = {
+          ...state.document,
+
+          components: state.document.components.map((component) => {
+            if (component.id !== id || component.type !== "image") {
+              return component;
+            }
+
+            return {
+              ...component,
+              props: nextProps,
+            };
+          }),
+        };
+
+        return recordDocumentChange(
+          state,
+          nextDocument,
+          props.alt !== undefined && props.src === undefined
+            ? {
+                kind: "text",
+                componentId: id,
+                field: "image.alt",
+              }
+            : null,
+        );
       });
     },
 

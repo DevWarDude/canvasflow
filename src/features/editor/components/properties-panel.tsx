@@ -3,6 +3,7 @@
 import { SlidersHorizontal } from "lucide-react";
 
 import { useEditorStore } from "../store/editor-store-provider";
+import { ImagePropertiesPanel } from "./image-properties-panel";
 
 import type { EditorComponent } from "../types/editor-document";
 
@@ -246,11 +247,11 @@ export function PropertiesPanel() {
           )}
 
           {selectedComponent.type === "image" && (
-            <p className="text-xs leading-5 text-gray-400">
-              Image source and upload controls will be implemented in a later
-              milestone.
-            </p>
-          )}
+  <ImagePropertiesPanel
+    key={selectedComponent.id}
+    component={selectedComponent}
+  />
+)}
         </div>
       )}
     </aside>

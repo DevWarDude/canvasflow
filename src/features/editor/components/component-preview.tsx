@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 
 import type { EditorComponent } from "../types/editor-document";
+import { ImageComponentPreview } from "./image-component-preview";
 
 interface ComponentPreviewProps {
   component: EditorComponent;
@@ -74,14 +75,7 @@ export function ComponentPreview({ component }: ComponentPreviewProps) {
     // IMAGE PLACEHOLDER
 
     case "image":
-      return (
-        <div
-          style={component.styles}
-          className="flex max-w-full min-w-0 items-center justify-center overflow-hidden border border-dashed border-gray-300 bg-gray-50 text-center text-sm text-gray-400"
-        >
-          Image placeholder
-        </div>
-      );
+  return <ImageComponentPreview component={component} />;
 
     // SECTION
 
