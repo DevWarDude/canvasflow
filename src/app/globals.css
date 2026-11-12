@@ -4,9 +4,9 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ========================================
+/* 
    CANVASFLOW — TAILWIND THEME CONFIGURATION
-======================================== */
+ */
 
 @theme inline {
   /* Base Colors */
@@ -62,9 +62,9 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* ========================================
+  /*
      CANVASFLOW CUSTOM DESIGN TOKENS
-  ======================================== */
+  */
 
   --color-canvas-dashboard: var(--canvas-dashboard);
   --color-canvas-editor: var(--canvas-editor);
@@ -73,9 +73,9 @@
   --color-canvas-workspace: var(--canvas-workspace);
 }
 
-/* ========================================
+/*
    LIGHT THEME — DASHBOARD
-======================================== */
+*/
 
 :root {
   /* Background */
@@ -134,9 +134,9 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: #635bff;
 
-  /* ========================================
+  /*
      CANVASFLOW APPLICATION COLORS
-  ======================================== */
+  */
 
   /* Dashboard */
   --canvas-dashboard: #f8fafc;
@@ -150,9 +150,9 @@
   --canvas-workspace: #edeef2;
 }
 
-/* ========================================
+/*
    DARK THEME
-======================================== */
+*/
 
 .dark {
   /* Background */
@@ -212,10 +212,9 @@
   --canvas-dashboard: #111217;
 }
 
-/* ========================================
+/*
    GLOBAL BASE STYLES
-======================================== */
-
+*/
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -227,5 +226,18 @@
 
   html {
     @apply font-sans;
+  }
+
+  /* Pointer cursor for interactive buttons */
+  button:not(:disabled):not([aria-disabled="true"]),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
+  /* Disabled buttons */
+  button:disabled,
+  button[aria-disabled="true"],
+  [role="button"][aria-disabled="true"] {
+    cursor: not-allowed;
   }
 }

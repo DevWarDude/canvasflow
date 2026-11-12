@@ -76,7 +76,7 @@ export function CreateProjectDialog() {
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
           <div className="space-y-2">
-            <label htmlFor="project-name" className="text-sm font-medium">
+            <label htmlFor="project-name" className="text-sm font-medium block  mb-2">
               Project Name
             </label>
 
