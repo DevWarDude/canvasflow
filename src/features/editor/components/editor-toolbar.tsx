@@ -23,6 +23,7 @@ import { saveEditorDocument } from "../lib/editor-document-repository";
 
 import { useEditorStore } from "../store/editor-store-provider";
 import { generateHtmlDocument } from "../lib/export-html";
+import { EditorShortcutsHelp } from "./editor-shortcuts-help";
 
 interface EditorToolbarProps {
   projectName: string;
@@ -206,15 +207,6 @@ export function EditorToolbar({ projectName }: EditorToolbarProps) {
         >
           <Redo2 className="size-4" />
           Redo
-        </Button>
-
-        <Button
-          variant="outline"
-          disabled
-          className="border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white disabled:opacity-40"
-        >
-          <Eye className="size-4" />
-          Preview
         </Button>
 
         <Button onClick={handleSave} disabled={!isDirty || isSaving}>

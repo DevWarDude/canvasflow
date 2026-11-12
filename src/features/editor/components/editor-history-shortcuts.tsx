@@ -32,6 +32,11 @@ export function EditorHistoryShortcuts() {
 
       const target = event.target;
 
+      // Ignore shortcuts while a dialog is active.
+      if (target instanceof Element && target.closest("[role='dialog']")) {
+        return;
+      }
+
       // Don't interfere with text inputs.
       const isEditingText =
         target instanceof Element &&
