@@ -6,13 +6,22 @@ import Link from "next/link";
 
 import { useQueryClient } from "@tanstack/react-query";
 
-import { ArrowLeft, Eye, Save, Layers3, Undo2, Redo2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Eye,
+  Save,
+  Layers3,
+  Undo2,
+  Redo2,
+  Download,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
 import { saveEditorDocument } from "../lib/editor-document-repository";
 
 import { useEditorStore } from "../store/editor-store-provider";
+import { generateHtmlDocument } from "../lib/export-html";
 
 interface EditorToolbarProps {
   projectName: string;
@@ -69,6 +78,44 @@ export function EditorToolbar({ projectName }: EditorToolbarProps) {
     } finally {
       setIsSaving(false);
     }
+  }
+
+  function handleExport() {
+    // 1. Generate HTML from the current editor document.
+    const html = generateHtmlDocument(document, projectName);
+
+    // 2. Convert the HTML string into a downloadable file.
+    const blob = new Blob([html], {
+      type: "text/html;charset=utf-8",
+    });
+
+    // 3. Create a temporary URL for the file.
+    const url = URL.createObjectURL(blob);
+
+    // 4. Create a safe filename from the project name.
+    const filename =
+      projectName
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9-_]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "canvasflow-website";
+
+    // 5. Create a temporary download link.
+    const link = window.document.createElement("a");
+
+    link.href = url;
+    link.download = `${filename}.html`;
+
+    // 6. Trigger the download.
+    window.document.body.appendChild(link);
+    link.click();
+
+    // 7. Clean up.
+    link.remove();
+
+    window.setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 1000);
   }
 
   return (
@@ -152,6 +199,16 @@ export function EditorToolbar({ projectName }: EditorToolbarProps) {
           <Save className="size-4" />
 
           {isSaving ? "Saving..." : "Save"}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleExport}
+          disabled={document.components.length === 0}
+          className="border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white disabled:opacity-40"
+        >
+          <Download className="size-4" />
+          Export HTML
         </Button>
       </div>
     </header>
