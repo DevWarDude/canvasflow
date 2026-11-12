@@ -7,15 +7,7 @@ import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUnsavedChangesWarning } from "../hooks/use-unsaved-changes-warning";
 
-import {
-  ArrowLeft,
-  Eye,
-  Save,
-  Layers3,
-  Undo2,
-  Redo2,
-  Download,
-} from "lucide-react";
+import { ArrowLeft, Save, Layers3, Undo2, Redo2, Download } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -23,7 +15,6 @@ import { saveEditorDocument } from "../lib/editor-document-repository";
 
 import { useEditorStore } from "../store/editor-store-provider";
 import { generateHtmlDocument } from "../lib/export-html";
-import { EditorShortcutsHelp } from "./editor-shortcuts-help";
 
 interface EditorToolbarProps {
   projectName: string;
