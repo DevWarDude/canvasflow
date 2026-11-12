@@ -6,10 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export type ProjectSortOption =
-  | "updated-desc"
-  | "updated-asc"
-  | "name-asc"
-  | "name-desc";
+  "updated-desc" | "updated-asc" | "name-asc" | "name-desc";
 
 interface ProjectToolbarProps {
   search: string;
@@ -31,7 +28,6 @@ export function ProjectToolbar({
   return (
     <div className="mt-10 space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
         {/* Search Input */}
         <div className="relative w-full sm:max-w-sm">
           <label htmlFor="project-search" className="sr-only">
@@ -43,9 +39,7 @@ export function ProjectToolbar({
           <Input
             id="project-search"
             value={search}
-            onChange={(event) =>
-              onSearchChange(event.target.value)
-            }
+            onChange={(event) => onSearchChange(event.target.value)}
             placeholder="Search projects..."
             className="pl-10 pr-10"
             autoComplete="off"
@@ -78,27 +72,17 @@ export function ProjectToolbar({
             id="project-sort"
             value={sortBy}
             onChange={(event) =>
-              onSortChange(
-                event.target.value as ProjectSortOption
-              )
+              onSortChange(event.target.value as ProjectSortOption)
             }
             className="h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <option value="updated-desc">
-              Recently Updated
-            </option>
+            <option value="updated-desc">Recently Updated</option>
 
-            <option value="updated-asc">
-              Least Recently Updated
-            </option>
+            <option value="updated-asc">Least Recently Updated</option>
 
-            <option value="name-asc">
-              Name: A to Z
-            </option>
+            <option value="name-asc">Name: A to Z</option>
 
-            <option value="name-desc">
-              Name: Z to A
-            </option>
+            <option value="name-desc">Name: Z to A</option>
           </select>
         </div>
       </div>
@@ -111,9 +95,7 @@ export function ProjectToolbar({
       >
         {search.trim()
           ? `${resultCount} of ${totalCount} projects`
-          : `${totalCount} ${
-              totalCount === 1 ? "project" : "projects"
-            }`}
+          : `${totalCount} ${totalCount === 1 ? "project" : "projects"}`}
       </p>
     </div>
   );
