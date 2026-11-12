@@ -5,6 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 
 import { useQueryClient } from "@tanstack/react-query";
+import { useUnsavedChangesWarning } from "../hooks/use-unsaved-changes-warning";
 
 import {
   ArrowLeft,
@@ -49,6 +50,7 @@ export function EditorToolbar({ projectName }: EditorToolbarProps) {
   const document = useEditorStore((state) => state.document);
 
   const isDirty = useEditorStore((state) => state.isDirty);
+  useUnsavedChangesWarning(isDirty);
 
   const markSaved = useEditorStore((state) => state.markSaved);
 
@@ -134,6 +136,17 @@ export function EditorToolbar({ projectName }: EditorToolbarProps) {
         <Link
           href="/projects"
           aria-label="Back to projects"
+          onNavigate={(event) => {
+            if (!isDirty) return;
+
+            const shouldLeave = window.confirm(
+              "You have unsaved changes. Leave without saving?",
+            );
+
+            if (!shouldLeave) {
+              event.preventDefault();
+            }
+          }}
           className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
         >
           <ArrowLeft className="size-4" />
