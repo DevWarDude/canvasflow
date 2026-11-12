@@ -1,6 +1,6 @@
 "use client";
 
-import { SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal, CopyPlus } from "lucide-react";
 
 import { useEditorStore } from "../store/editor-store-provider";
 import { ImagePropertiesPanel } from "./image-properties-panel";
@@ -36,6 +36,10 @@ export function PropertiesPanel() {
 
   const updateComponentStyle = useEditorStore(
     (state) => state.updateComponentStyle,
+  );
+
+  const duplicateComponent = useEditorStore(
+    (state) => state.duplicateComponent,
   );
 
   const textValue = selectedComponent
@@ -77,12 +81,27 @@ export function PropertiesPanel() {
       ) : (
         <div className="space-y-6 p-5">
           {/* Component information */}
+          {/* Component information */}
           <div className="border-b border-canvas-editor-border pb-5">
             <p className="text-xs text-gray-400">Selected Component</p>
 
-            <h3 className="mt-2 text-sm font-semibold capitalize text-white">
-              {selectedComponent.type}
-            </h3>
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <h3 className="text-sm font-semibold capitalize text-white">
+                {selectedComponent.type}
+              </h3>
+
+              <button
+                type="button"
+                onClick={() => duplicateComponent(selectedComponent.id)}
+                aria-label={`Duplicate ${selectedComponent.type}`}
+                title="Duplicate component"
+                className="flex items-center gap-2 rounded-md border border-canvas-editor-border bg-white/5 px-3 py-2 text-xs font-medium text-gray-200 transition-colors hover:border-indigo-500 hover:bg-indigo-500/10 hover:text-white"
+              >
+                <CopyPlus className="size-4" />
+
+                <span>Duplicate</span>
+              </button>
+            </div>
           </div>
 
           {/* Content editor */}
@@ -247,11 +266,11 @@ export function PropertiesPanel() {
           )}
 
           {selectedComponent.type === "image" && (
-  <ImagePropertiesPanel
-    key={selectedComponent.id}
-    component={selectedComponent}
-  />
-)}
+            <ImagePropertiesPanel
+              key={selectedComponent.id}
+              component={selectedComponent}
+            />
+          )}
         </div>
       )}
     </aside>

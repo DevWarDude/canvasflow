@@ -42,8 +42,8 @@ export interface EditorStore {
   addComponent: (type: EditorComponentType) => void;
   selectComponent: (id: string | null) => void;
   removeComponent: (id: string) => void;
+  duplicateComponent: (id: string) => void;
   moveComponent: (id: string, direction: "up" | "down") => void;
-
   // Editing actions
   updateComponentText: (id: string, text: string) => void;
 
@@ -249,6 +249,56 @@ export function createEditorStore(
 
           selectedComponentId:
             state.selectedComponentId === id ? null : state.selectedComponentId,
+        };
+      });
+    },
+
+    // DUPLICATE COMPONENT
+
+    duplicateComponent: (id) => {
+      set((state) => {
+        const components = state.document.components;
+
+        // Find the original component.
+        const originalIndex = components.findIndex(
+          (component) => component.id === id,
+        );
+
+        // Stop if the component doesn't exist.
+        if (originalIndex === -1) {
+          return state;
+        }
+
+        const originalComponent = components[originalIndex];
+
+        if (!originalComponent) {
+          return state;
+        }
+
+        // Create an independent copy.
+        const duplicatedComponent: EditorComponent =
+          structuredClone(originalComponent);
+
+        // Give the duplicate its own unique ID.
+        duplicatedComponent.id = crypto.randomUUID();
+
+        // Copy the components array.
+        const updatedComponents = [...components];
+
+        // Insert the duplicate after the original.
+        updatedComponents.splice(originalIndex + 1, 0, duplicatedComponent);
+
+        // Create the updated document.
+        const nextDocument: EditorDocument = {
+          ...state.document,
+          components: updatedComponents,
+        };
+
+        // Record the change and select the duplicate.
+        return {
+          ...recordDocumentChange(state, nextDocument),
+
+          selectedComponentId: duplicatedComponent.id,
         };
       });
     },
