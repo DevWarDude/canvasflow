@@ -4,6 +4,8 @@ import type {
   EditorStyles,
 } from "../types/editor-document";
 
+import { getImageAsset } from "./image-asset-repository";
+
 // Convert special characters into safe HTML entities.
 function escapeHtml(value: string): string {
   const entities: Record<string, string> = {
@@ -18,6 +20,53 @@ function escapeHtml(value: string): string {
     /[&<>"']/g,
     (character) => entities[character] ?? character,
   );
+}
+
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+      } else {
+        reject(new Error("Unable to convert image."));
+      }
+    };
+
+    reader.onerror = () => {
+      reject(reader.error ?? new Error("Failed to read image."));
+    };
+
+    reader.readAsDataURL(blob);
+  });
+}
+const SUPPORTED_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
+
+async function resolveImageSource(source: string): Promise<string | null> {
+  if (!source.startsWith("asset:")) {
+    return null;
+  }
+
+  const asset = await getImageAsset(source);
+
+  if (!asset) {
+    return null;
+  }
+
+  if (
+    !SUPPORTED_IMAGE_TYPES.has(asset.blob.type) ||
+    asset.blob.size === 0 ||
+    asset.blob.size > 5 * 1024 * 1024
+  ) {
+    return null;
+  }
+
+  return blobToDataUrl(asset.blob);
 }
 
 // Accept only supported hexadecimal color values.
@@ -131,7 +180,7 @@ function getStyleAttribute(component: EditorComponent): string {
 }
 
 // Convert one component into HTML.
-function renderComponent(component: EditorComponent): string {
+async function renderComponent(component: EditorComponent): Promise<string> {
   const styleAttribute = getStyleAttribute(component);
 
   switch (component.type) {
@@ -163,17 +212,31 @@ function renderComponent(component: EditorComponent): string {
         </button>
       `;
 
-    case "image":
+    case "image": {
+      const imageSource = await resolveImageSource(component.props.src);
+
+      if (!imageSource) {
+        return `
+      <div
+        class="cf-image-placeholder"
+        role="img"
+        aria-label="${escapeHtml(component.props.alt || "Image placeholder")}"
+        ${styleAttribute}
+      >
+        Image unavailable
+      </div>
+    `;
+      }
+
       return `
-        <div
-          class="cf-image-placeholder"
-          role="img"
-          aria-label="${escapeHtml(component.props.alt || "Image placeholder")}"
-          ${styleAttribute}
-        >
-          Image export is coming soon.
-        </div>
-      `;
+    <img
+      class="cf-image"
+      src="${escapeHtml(imageSource)}"
+      alt="${escapeHtml(component.props.alt)}"
+      ${styleAttribute}
+    />
+  `;
+    }
 
     case "section":
       return `
@@ -269,6 +332,13 @@ const BASE_CSS = `
     font-size: 14px;
   }
 
+  .cf-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
   @container (max-width: 480px) {
     .cf-heading {
       font-size: min(var(--cf-heading-size, 32px), 8cqw);
@@ -291,21 +361,25 @@ const BASE_CSS = `
 `;
 
 // Generate the complete standalone HTML document.
-export function generateHtmlDocument(
+export async function generateHtmlDocument(
   document: EditorDocument,
   projectName: string,
-): string {
+): Promise<string> {
   const title = escapeHtml(projectName.trim() || "CanvasFlow Website");
 
-  const pageContent = document.components
-    .map(
-      (component) => `
-        <div class="cf-block">
-          ${renderComponent(component)}
-        </div>
-      `,
-    )
-    .join("\n");
+  const renderedComponents = await Promise.all(
+    document.components.map(async (component) => {
+      const html = await renderComponent(component);
+
+      return `
+      <div class="cf-block">
+        ${html}
+      </div>
+    `;
+    }),
+  );
+
+  const pageContent = renderedComponents.join("\n");
 
   return `<!DOCTYPE html>
 <html lang="en">

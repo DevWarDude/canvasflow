@@ -32,6 +32,9 @@ export function EditorToolbar({ projectName }: EditorToolbarProps) {
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const beginSave = useEditorStore((state) => state.beginSave);
 
@@ -80,42 +83,48 @@ export function EditorToolbar({ projectName }: EditorToolbarProps) {
     }
   }
 
-  function handleExport() {
-    // 1. Generate HTML from the current editor document.
-    const html = generateHtmlDocument(document, projectName);
+  async function handleExport() {
+    if (isExporting) return;
 
-    // 2. Convert the HTML string into a downloadable file.
-    const blob = new Blob([html], {
-      type: "text/html;charset=utf-8",
-    });
+    setIsExporting(true);
+    setExportError(null);
 
-    // 3. Create a temporary URL for the file.
-    const url = URL.createObjectURL(blob);
+    try {
+      // Generate HTML and embed stored images.
+      const html = await generateHtmlDocument(document, projectName);
 
-    // 4. Create a safe filename from the project name.
-    const filename =
-      projectName
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9-_]+/g, "-")
-        .replace(/^-+|-+$/g, "") || "canvasflow-website";
+      const blob = new Blob([html], {
+        type: "text/html;charset=utf-8",
+      });
 
-    // 5. Create a temporary download link.
-    const link = window.document.createElement("a");
+      const url = URL.createObjectURL(blob);
 
-    link.href = url;
-    link.download = `${filename}.html`;
+      const filename =
+        projectName
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9-_]+/g, "-")
+          .replace(/^-+|-+$/g, "") || "canvasflow-website";
 
-    // 6. Trigger the download.
-    window.document.body.appendChild(link);
-    link.click();
+      const link = window.document.createElement("a");
 
-    // 7. Clean up.
-    link.remove();
+      link.href = url;
+      link.download = `${filename}.html`;
 
-    window.setTimeout(() => {
-      URL.revokeObjectURL(url);
-    }, 1000);
+      window.document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      window.setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 1000);
+    } catch (error) {
+      console.error("Unable to export website:", error);
+
+      setExportError("Website export failed.");
+    } finally {
+      setIsExporting(false);
+    }
   }
 
   return (
@@ -204,12 +213,18 @@ export function EditorToolbar({ projectName }: EditorToolbarProps) {
           type="button"
           variant="outline"
           onClick={handleExport}
-          disabled={document.components.length === 0}
+          disabled={isExporting || document.components.length === 0}
           className="border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white disabled:opacity-40"
         >
           <Download className="size-4" />
-          Export HTML
+
+          {isExporting ? "Exporting..." : "Export HTML"}
         </Button>
+        {exportError && (
+          <span role="alert" className="text-xs text-red-400">
+            {exportError}
+          </span>
+        )}
       </div>
     </header>
   );
